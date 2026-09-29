@@ -6,15 +6,6 @@ import streamlit as st
 
 from app import data
 
-CLUB_COLOURS = {
-    "Arsenal": "#EF0107", "Aston Villa": "#670E36", "Bournemouth": "#B50E12", "Brentford": "#E30613",
-    "Brighton": "#0057B8", "Chelsea": "#034694", "Coventry": "#59CBE8", "Crystal Palace": "#1B458F",
-    "Everton": "#003399", "Fulham": "#5A5A5A", "Hull": "#F5A12D", "Ipswich": "#3A64A3",
-    "Leeds": "#FFCD00", "Liverpool": "#C8102E", "Man City": "#6CABDD", "Man Utd": "#DA291C",
-    "Newcastle": "#4A4A4A", "Nott'm Forest": "#DD0000", "Spurs": "#132257", "Sunderland": "#EB172B",
-    "Burnley": "#6C1D45", "West Ham": "#7A263A", "Wolves": "#FDB913", "Leicester": "#003090",
-    "Southampton": "#D71920",
-}
 HOME, DRAW, AWAY = "#0E8A5F", "#8A948F", "#3F6FD8"
 FAVOUR_HOME, FAVOUR_AWAY = HOME, AWAY
 
@@ -50,7 +41,7 @@ def money(v) -> str:
 
 
 def badge(team: str) -> str:
-    c = CLUB_COLOURS.get(team, "#888")
+    c = data.club_colours().get(team, "#888")
     return f'<span class="ml-badge"><span class="ml-dot" style="background:{c}"></span>{html.escape(team)}</span>'
 
 
@@ -62,7 +53,7 @@ def prob_bar(home: str, away: str, p_h: float, p_d: float, p_a: float, big: bool
         t = text if pct >= 12 else (f"{pct}%" if pct >= 7 else "")
         return f'<div style="width:{pct}%;background:{colour}">{t}</div>'
 
-    return (f'<div class="ml-bar"{style}>{seg(h, HOME, f"{h}%")}{seg(d, DRAW, f"Draw {d}%")}'
+    return (f'<div class="ml-bar"{style}>{seg(h, HOME, f"{h}%")}{seg(d, DRAW, f"Draw {d}%" if d >= 25 else f"{d}%")}'
             f'{seg(a, AWAY, f"{a}%")}</div>'
             f'<div class="ml-legend"><span>{html.escape(home)} win</span><span>Draw</span>'
             f'<span>{html.escape(away)} win</span></div>')
@@ -90,18 +81,44 @@ def pill(text: str, colour: str) -> str:
     return f'<span class="ml-pill" style="background:{colour}22;color:{colour};border:1px solid {colour}66">{html.escape(text)}</span>'
 
 
-def player_picker(label: str, codes: list[int], key: str = "player", default: int | None = None,
+def player_picker(label: str, pids: list[int], key: str = "player", default: int | None = None,
                   help: str | None = None) -> int | None:
     """Searchable player box whose choice lives in the URL (?player=...), so links are shareable."""
-    labels = data.player_index().set_index("code")["label"].to_dict()
-    codes = [c for c in codes if c in labels]
-    idx = codes.index(default) if default in codes else (0 if codes else None)
-    return st.selectbox(label, codes, index=idx, format_func=lambda c: labels.get(c, str(c)),
+    labels = data.player_index().set_index("pid")["label"].to_dict()
+    pids = [c for c in pids if c in labels]
+    idx = pids.index(default) if default in pids else (0 if pids else None)
+    return st.selectbox(label, pids, index=idx, format_func=lambda c: labels.get(c, str(c)),
                         key=key, bind="query-params", placeholder="Type a player's name…", help=help)
 
 
-def team_picker(label: str, key: str, default: str) -> str:
-    teams = data.teams()
+def league_picker(key: str = "league") -> str:
+    """Premier League · La Liga · Serie A · Bundesliga · Ligue 1. Lives in the URL (?league=...)
+    and is remembered across pages; links without it mean the Premier League."""
+    lg = data.leagues()
+    # A shared link naming a club (e.g. ?home=Barcelona) picks that club's league.
+    if key not in st.query_params:
+        for q in ("home", "away"):
+            team = st.query_params.get(q)
+            if team and team in data.team_league():
+                st.session_state[key] = data.team_league()[team]
+                break
+    return st.segmented_control("League", list(lg), format_func=lambda k: lg[k]["name"],
+                                default=data.DEFAULT_LEAGUE, required=True, key=key,
+                                bind="query-params", persist_state="session",
+                                label_visibility="collapsed")
+
+
+def league_filter(label: str = "League", key: str = "league_filter") -> str | None:
+    """All leagues, or just one (for lists and search results). None = all."""
+    lg = data.leagues()
+    opts = ["all"] + list(lg)
+    choice = st.segmented_control(label, opts, default="all", required=True, key=key,
+                                  format_func=lambda k: "All top 5" if k == "all" else lg[k]["name"])
+    return None if choice == "all" else choice
+
+
+def team_picker(label: str, key: str, default: str, league: str | None = None) -> str:
+    teams = data.teams(league)
     return st.selectbox(label, teams, index=teams.index(default) if default in teams else 0,
                         key=key, bind="query-params")
 

@@ -4,8 +4,9 @@ Every feature for a match is computed only from matches played *before* it."""
 import numpy as np
 import pandas as pd
 
-from pipeline.config import CURRENT_SEASON, DATA, MATCH_HISTORY_FROM
-from pipeline.sources import fdcouk, understat
+from pipeline import clubs
+from pipeline.config import BUILD, CURRENT_SEASON, LEAGUES, MATCH_HISTORY_FROM
+from pipeline.sources import understat
 
 ELO_START = 1500.0
 ELO_K = 20.0
@@ -15,13 +16,20 @@ ROLL = (5, 10)
 FORM_STATS = ["gf", "ga", "xgf", "xga", "sf", "sa", "sotf", "sota", "pts"]
 
 
-def load_matches() -> pd.DataFrame:
-    rows = []
-    for s in range(MATCH_HISTORY_FROM, CURRENT_SEASON + 1):
-        fd = fdcouk.season(s)
-        us = understat.matches(s)[["home", "away", "home_xg", "away_xg"]]
-        rows.append(fd.merge(us, on=["home", "away"], how="left"))  # a pairing is unique per season
-    df = pd.concat(rows, ignore_index=True).sort_values(["date", "home"]).reset_index(drop=True)
+def load_league(league: str) -> pd.DataFrame:
+    fd = clubs.fd_matches(league)
+    us = pd.concat([understat.matches(s, league) for s in range(MATCH_HISTORY_FROM, CURRENT_SEASON + 1)])
+    us = us[["season", "home", "away", "home_xg", "away_xg"]]
+    return fd.merge(us, on=["season", "home", "away"], how="left")  # a pairing is unique per season
+
+
+def load_matches(leagues=None) -> pd.DataFrame:
+    df = pd.concat([load_league(lg) for lg in (leagues or LEAGUES)], ignore_index=True)
+    df = df.dropna(subset=["home", "away"])
+    clash = df.groupby("home")["league"].nunique()
+    if (clash > 1).any():  # club names double as keys, so they must be unique across leagues
+        raise ValueError(f"club name used in two leagues: {list(clash[clash > 1].index)}")
+    df = df.sort_values(["date", "league", "home"]).reset_index(drop=True)
     df["result"] = np.select([df.home_goals > df.away_goals, df.home_goals < df.away_goals],
                              ["H", "A"], "D")
     df["match_id"] = np.arange(len(df))
@@ -33,6 +41,16 @@ def _elo_expect(r_home: float, r_away: float) -> float:
 
 
 def add_elo(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
+    """Pre-match Elo, one rating pool per league (league clubs never meet each other)."""
+    parts, ratings = [], {}
+    for _, g in df.groupby("league", sort=False):
+        g, r = _elo_one_league(g)
+        parts.append(g)
+        ratings.update(r)
+    return pd.concat(parts).sort_values(["date", "league", "home"]).reset_index(drop=True), ratings
+
+
+def _elo_one_league(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
     """Pre-match Elo for both sides. Promoted clubs start at the average of the clubs they replaced."""
     ratings: dict[str, float] = {}
     pre_h, pre_a = [], []
@@ -71,7 +89,7 @@ def team_long(df: pd.DataFrame) -> pd.DataFrame:
     def side(h: bool) -> pd.DataFrame:
         me, op = ("home", "away") if h else ("away", "home")
         return pd.DataFrame({
-            "match_id": df.match_id, "date": df.date, "season": df.season,
+            "match_id": df.match_id, "date": df.date, "season": df.season, "league": df.league,
             "team": df[me], "opp": df[op], "is_home": h,
             "gf": df[f"{me}_goals"], "ga": df[f"{op}_goals"],
             "xgf": df[f"{me}_xg"], "xga": df[f"{op}_xg"],
@@ -97,13 +115,16 @@ def add_form(long: pd.DataFrame) -> pd.DataFrame:
     return long
 
 
-def team_state_now(long: pd.DataFrame, ratings: dict, teams: list[str]) -> pd.DataFrame:
-    """Each current team's latest Elo and form (including its most recent match)."""
+def team_state_now(long: pd.DataFrame, ratings: dict, teams: list[tuple[str, str]]) -> pd.DataFrame:
+    """Each current (league, team)'s latest Elo and form (including its most recent match)."""
     rows = []
-    for t in teams:
+    for league, t in teams:
         g = long[long.team == t]
         g = g[g.stint == g.stint.max()] if len(g) else g
-        row = {"team": t, "elo": ratings.get(t, np.nan),
+        # A club that's new to the league (or back after years away) keeps no stale form.
+        if len(g) and g.season.max() < CURRENT_SEASON - 1:
+            g = g.iloc[0:0]
+        row = {"league": league, "team": t, "elo": ratings.get(t, np.nan),
                "last_match": g.date.max() if len(g) else pd.NaT}
         for n in ROLL:
             tail = g.tail(n)
@@ -130,12 +151,11 @@ def build() -> tuple[pd.DataFrame, pd.DataFrame, dict]:
 
 def main():
     df, long, ratings = build()
-    df.to_parquet(DATA / "matches.parquet", index=False)
-    long.to_parquet(DATA / "team_matches.parquet", index=False)
-    pd.Series(ratings, name="elo").rename_axis("team").reset_index().to_parquet(
-        DATA / "elo_now.parquet", index=False)
-    print(f"matches: {len(df)} ({df.season.min()}-{df.season.max()}) | xG coverage "
-          f"{df.home_xg.notna().mean():.1%} | odds coverage {df.odds_h.notna().mean():.1%}")
+    df.to_parquet(BUILD / "matches.parquet", index=False)
+    long.to_parquet(BUILD / "team_matches.parquet", index=False)
+    for lg, g in df.groupby("league"):
+        print(f"  {lg:10} matches: {len(g)} ({g.season.min()}-{g.season.max()}) | xG coverage "
+              f"{g.home_xg.notna().mean():.1%} | odds coverage {g.odds_h.notna().mean():.1%}")
 
 
 if __name__ == "__main__":

@@ -1,4 +1,6 @@
-"""Transfermarkt snapshot from dcaribou/transfermarkt-datasets (valuations end 12 Jun 2026)."""
+"""Transfermarkt snapshot from dcaribou/transfermarkt-datasets (valuations end 12 Jun 2026).
+
+`team` is only reliable for English clubs; pipeline/clubs.py maps other clubs by shared players."""
 import time
 
 import duckdb
@@ -33,7 +35,8 @@ def players() -> pd.DataFrame:
         df = c.sql("""
             select player_id as tm_id, name, date_of_birth, position, sub_position, foot,
                    height_in_cm, international_caps, contract_expiration_date,
-                   current_club_name, market_value_in_eur, highest_market_value_in_eur
+                   current_club_name, current_club_domestic_competition_id as tm_comp,
+                   market_value_in_eur, highest_market_value_in_eur
             from players
             where last_season >= '2022'
         """).df()
@@ -45,7 +48,8 @@ def players() -> pd.DataFrame:
 def valuations() -> pd.DataFrame:
     with _db() as c:
         df = c.sql("""
-            select player_id as tm_id, date, market_value_in_eur as value, current_club_name
+            select player_id as tm_id, date, market_value_in_eur as value, current_club_name,
+                   player_club_domestic_competition_id as tm_comp
             from player_valuations where date >= '2022-01-01'
         """).df()
     df["date"] = pd.to_datetime(df["date"])

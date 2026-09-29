@@ -1,20 +1,70 @@
 {
   "validation_season": 2025,
-  "train_rows": 1185,
-  "ridge": {
-    "mae_eur_m": 9.33,
-    "median_pct_error": 26.7,
-    "within_50pct": 80.1,
-    "n": 391
+  "train_rows": 5702,
+  "per_league_ridge": {
+    "mae_eur_m": 5.93,
+    "median_pct_error": 34.4,
+    "within_50pct": 69.0,
+    "n": 1926
+  },
+  "pooled_ridge": {
+    "mae_eur_m": 5.99,
+    "median_pct_error": 35.7,
+    "within_50pct": 68.5,
+    "n": 1926
   },
   "xgboost": {
-    "mae_eur_m": 9.63,
-    "median_pct_error": 28.7,
-    "within_50pct": 78.3,
-    "n": 391
+    "mae_eur_m": 5.69,
+    "median_pct_error": 34.0,
+    "within_50pct": 69.2,
+    "n": 1926
   },
-  "chosen": "ridge",
-  "market_calibration": 1.198,
+  "blend": {
+    "mae_eur_m": 5.66,
+    "median_pct_error": 33.4,
+    "within_50pct": 70.1,
+    "n": 1926
+  },
+  "chosen": "blend",
+  "by_league": {
+    "Bundesliga": {
+      "mae_eur_m": 4.55,
+      "median_pct_error": 31.1,
+      "within_50pct": 74.4,
+      "n": 348
+    },
+    "EPL": {
+      "mae_eur_m": 9.06,
+      "median_pct_error": 27.0,
+      "within_50pct": 80.1,
+      "n": 391
+    },
+    "La_Liga": {
+      "mae_eur_m": 5.12,
+      "median_pct_error": 41.1,
+      "within_50pct": 60.0,
+      "n": 408
+    },
+    "Ligue_1": {
+      "mae_eur_m": 5.64,
+      "median_pct_error": 38.4,
+      "within_50pct": 61.9,
+      "n": 357
+    },
+    "Serie_A": {
+      "mae_eur_m": 3.96,
+      "median_pct_error": 32.0,
+      "within_50pct": 73.9,
+      "n": 422
+    }
+  },
+  "market_calibration": {
+    "Bundesliga": 1.204,
+    "EPL": 1.201,
+    "La_Liga": 0.954,
+    "Ligue_1": 1.145,
+    "Serie_A": 1.101
+  },
   "snapshot_date": "2026-06-12",
-  "estimated_players": 334
+  "estimated_players": 1353
 }

@@ -50,10 +50,56 @@ def test_simulator_probabilities_add_up():
 
 def test_simulator_what_if_mode():
     import pandas as pd
-    fid = int(pd.read_parquet(ROOT / "data" / "upcoming.parquet")["fixture_id"].iloc[0])
+    up = pd.read_parquet(ROOT / "data" / "upcoming.parquet").query("league == 'EPL'")
     at = AppTest.from_file(str(ROOT / "streamlit_app.py"), default_timeout=60)
     at.run()
-    at.session_state["whatif"] = {fid: "A"}
+    at.session_state["whatif"] = {"EPL": {up["fixture_id"].iloc[0]: "A"}}
     at.switch_page("app/pages/simulator.py").run()
     assert not at.exception
     assert any("locked in" in c.value for c in at.caption)
+
+
+LEAGUE_NAMES = ["Premier League", "La Liga", "Serie A", "Bundesliga", "Ligue 1"]
+LEAGUE_PAGES = ["app/pages/home.py", "app/pages/match.py", "app/pages/simulator.py"]
+
+
+@pytest.mark.parametrize("league", LEAGUE_NAMES)
+@pytest.mark.parametrize("page", LEAGUE_PAGES)
+def test_league_pages_render(page, league):
+    at = run(page, league=league)
+    assert not at.exception, [e.value for e in at.exception]
+    assert at.segmented_control(key="league").value ==         {"Premier League": "EPL", "La Liga": "La_Liga", "Serie A": "Serie_A",
+         "Bundesliga": "Bundesliga", "Ligue 1": "Ligue_1"}[league]
+
+
+def test_old_links_mean_premier_league():
+    at = run("app/pages/match.py", home="Arsenal", away="Leeds")
+    assert at.segmented_control(key="league").value == "EPL"
+    assert at.selectbox(key="home").value == "Arsenal"
+
+
+def test_club_link_picks_its_league():
+    at = run("app/pages/match.py", home="Barcelona", away="Getafe")
+    assert not at.exception
+    assert at.segmented_control(key="league").value == "La_Liga"
+    assert at.selectbox(key="home").value == "Barcelona"
+
+
+def test_value_page_outside_england():
+    at = run("app/pages/value.py", player="Lamine Yamal · Barcelona")
+    assert not at.exception
+    assert any("Lamine Yamal" in str(h.proto) for h in at.get("html"))
+
+
+def test_scout_across_europe():
+    at = run("app/pages/scout.py", player="Bukayo Saka · Arsenal")
+    assert not at.exception
+    html = " ".join(str(h.proto) for h in at.get("html"))
+    assert any(lg in html for lg in ["La Liga", "Serie A", "Bundesliga", "Ligue 1"])
+
+
+def test_compare_mixed_leagues():
+    at = run("app/pages/compare.py", players=["Bukayo Saka · Arsenal", "Lamine Yamal · Barcelona"])
+    assert not at.exception
+    assert len(at.multiselect(key="players").value) == 2
+    assert any("different leagues" in c.value for c in at.caption)

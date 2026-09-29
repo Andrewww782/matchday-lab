@@ -7,8 +7,8 @@ from app import data, ui
 PAGES = st.session_state["pages"]
 
 st.title("Who plays like him?")
-st.markdown("Pick a player to find others with the most similar playing style, based on what they "
-            "do per 90 minutes.")
+st.markdown("Pick a player to find others with the most similar playing style anywhere in Europe's top "
+            "five leagues, based on what they do per 90 minutes.")
 
 if not data.available("scout"):
     ui.missing("Scouting data")
@@ -16,22 +16,39 @@ if not data.available("scout"):
 
 sc = data.table("scout")
 meta = data.meta("scout_meta")
-labels, style_stats = meta["labels"], meta["style_stats"]
+labels, full_stats, att_stats = meta["labels"], meta["style_stats"], meta["att_stats"]
 
-code = ui.player_picker("Player", sc.sort_values("win_minutes", ascending=False)["code"].tolist(),
-                        help=f"Players with at least {meta['min_minutes']} league minutes since last season.")
-if code is None:
+pid = ui.player_picker("Player", sc.sort_values("win_minutes", ascending=False)["pid"].tolist(),
+                       help=f"Players with at least {meta['min_minutes']} league minutes since last season. "
+                            "Goalkeepers: Premier League only.")
+if pid is None:
     st.stop()
-me = sc.set_index("code").loc[code]
-cols = style_stats[me["pos"]]
+me = sc.set_index("pid").loc[pid]
+
+league = ui.league_filter("Search in", key="sc_league")
+if me["pos"] == "GK" and league != "EPL":
+    st.caption("Keepers can only be compared within the Premier League (that's where we have saves data).")
+    league = "EPL"
+# The full profile (with tackles, interceptions, recoveries) exists for Premier League players only.
+full = me["league"] == "EPL" and league == "EPL"
+cols = full_stats[me["pos"]] if full else att_stats[me["pos"]]
+pct = "pct_" if full else "pct_eu_"
+where = "Premier League" if full else "top-5-league"
 
 with st.container(border=True):
     st.html(f'<div style="font-size:1.3rem;font-weight:700">{me["name"]}</div>'
-            f'<div class="ml-muted">{ui.badge(me["team"])} · {me["pos"]} · age {me["age"]:.0f}</div>'
+            f'<div class="ml-muted">{ui.badge(me["team"])} · {me["league_name"]} · {me["pos"]} · '
+            f'age {me["age"]:.0f}</div>'
             f'<div style="margin-top:.5rem">Playing style: {ui.pill(me["style"], "#0E8A5F")}</div>')
-    strengths = sorted(((me[f"pct_{c}"], labels[c]) for c in cols), reverse=True)[:3]
-    st.markdown("Stands out for: " + ", ".join(f"**{l.lower()}** (better than {p:.0f}% of {me['pos']}s)"
-                                              for p, l in strengths))
+    strengths = sorted(((me[f"{pct}{c}"], labels[c]) for c in cols if pd.notna(me.get(f"{pct}{c}"))),
+                       reverse=True)[:3]
+    if strengths:
+        st.markdown("Stands out for: " + ", ".join(
+            f"**{lbl.lower()}** (better than {v:.0f}% of {where} {me['pos']}s)" for v, lbl in strengths))
+if not full:
+    st.caption("Across leagues we compare attacking and creative numbers (goals, expected goals, shots, "
+               "chances created, involvement and build-up play). Defensive stats are only available for "
+               "the Premier League: pick *Premier League* above to include them for Premier League players.")
 
 with st.expander("Filters", expanded=False):
     f1, f2 = st.columns(2)
@@ -44,19 +61,22 @@ with st.expander("Filters", expanded=False):
                         help="Off: only players in the same position.")
 
 
-def similar(sc: pd.DataFrame, code: int, cols: list[str], same_pos: bool) -> pd.Series:
-    me = sc.set_index("code").loc[code]
-    pool = sc[sc["pos"] == me["pos"]] if same_pos else sc[sc["pos"] != "GK"] if me["pos"] != "GK" else sc[sc["pos"] == "GK"]
+def similar(sc: pd.DataFrame, pid: int, cols: list[str], same_pos: bool, league: str | None) -> pd.Series:
+    me = sc.set_index("pid").loc[pid]
+    pool = sc[sc["pos"] == me["pos"]] if same_pos or me["pos"] == "GK" else sc[sc["pos"] != "GK"]
+    if league:
+        pool = pool[(pool["league"] == league) | (pool["pid"] == pid)]
+    pool = pool.dropna(subset=[f"p90_{c}" for c in cols])
     X = pool[[f"p90_{c}" for c in cols]].to_numpy(float)
     X = (X - X.mean(0)) / X.std(0).clip(1e-9)
-    v = X[pool["code"].tolist().index(code)]
+    v = X[pool["pid"].tolist().index(pid)]
     cos = X @ v / (np.linalg.norm(X, axis=1).clip(1e-9) * np.linalg.norm(v).clip(1e-9))
-    return pd.Series(np.clip(cos, 0, 1) * 100, index=pool["code"])
+    return pd.Series(np.clip(cos, 0, 1) * 100, index=pool["pid"])
 
 
-sim = similar(sc, code, cols, not any_pos).drop(code)
-res = sc.set_index("code").loc[sim.index].assign(similarity=sim)
-res = res[res["age"] <= max_age]
+sim = similar(sc, pid, cols, not any_pos, league).drop(pid)
+res = sc.set_index("pid").loc[sim.index].assign(similarity=sim)
+res = res[res["age"].isna() | (res["age"] <= max_age)]
 if budget < 250:
     res = res[res["tm_value"].fillna(0) <= budget * 1e6]
 if other_clubs:
@@ -69,24 +89,31 @@ if res.empty:
 for c, r in res.iterrows():
     with st.container(border=True):
         a, b, d = st.columns([5, 2, 2], vertical_alignment="center")
-        a.html(f'<b>{r["name"]}</b><br><span class="ml-muted">{ui.badge(r["team"])} · {r["pos"]} · '
-               f'age {r["age"]:.0f} · {r["style"]} · {ui.money(r["tm_value"])}</span>')
+        age = f"age {r['age']:.0f} · " if pd.notna(r["age"]) else ""
+        a.html(f'<b>{r["name"]}</b><br><span class="ml-muted">{ui.badge(r["team"])} · {r["league_name"]} · '
+               f'{r["pos"]} · {age}{r["style"]} · {ui.money(r["tm_value"])}</span>')
         b.metric("Similarity", f"{r['similarity']:.0f}%", label_visibility="collapsed")
         d.page_link(PAGES["compare"], label="Compare", icon=":material/compare_arrows:",
-                    query_params={"players": [data.player_label(code), data.player_label(c)]})
+                    query_params={"players": [data.player_label(pid), data.player_label(c)]})
 
 with st.expander("What do the playing styles mean?"):
     st.markdown("We group players in each position by what they do most, using a clustering method "
-                "(*k-means*). A few typical players for each style:")
+                "(*k-means*). Premier League players are grouped using their full profile, including "
+                "defensive work; players elsewhere by their attacking and creative numbers. A few typical "
+                "players for each style:")
+    g_all = sc if not league else sc[sc["league"] == league]
     for pos in ["GK", "DEF", "MID", "FWD"]:
-        g = sc[sc["pos"] == pos]
+        g = g_all[g_all["pos"] == pos]
+        if g.empty:
+            continue
         lines = [f"- **{s}**: " + ", ".join(grp.sort_values("win_minutes", ascending=False)["web_name"].head(4))
                  for s, grp in g.groupby("style")]
         st.markdown(f"**{pos}**\n" + "\n".join(lines))
 
 ui.how_it_works("""
-For every player we work out per-90-minute numbers (goals, expected goals, shots, chances created,
-build-up play, tackles, interceptions, recoveries; saves for keepers) over last season plus this one.
+For every player we work out per-90-minute numbers over last season plus this one: goals, expected
+goals, shots, chances created, involvement in attacks and build-up play for everyone (from Understat),
+plus tackles, interceptions, recoveries and saves for Premier League players (from the Fantasy API).
 We then compare the *shape* of each player's numbers with everyone else's in the same position.
-100% would be an identical profile. Numbers are from Understat and the official Fantasy API.
+100% would be an identical profile.
 """)

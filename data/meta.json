@@ -1,5 +1,14 @@
 {
-  "updated_at": "2026-09-29T07:06+00:00",
+  "updated_at": "2026-09-29T13:34+00:00",
   "season": "2026/27",
-  "last_finished_gw": 5
+  "last_finished_gw": 5,
+  "games_played": {
+    "Bundesliga": 36,
+    "EPL": 50,
+    "La_Liga": 69,
+    "Ligue_1": 45,
+    "Serie_A": 50
+  },
+  "stale_sources": [],
+  "stale_leagues": []
 }

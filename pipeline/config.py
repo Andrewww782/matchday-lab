@@ -3,10 +3,50 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW = ROOT / "data" / "raw"          # gitignored download cache
+BUILD = ROOT / "data" / "build"      # gitignored intermediate tables (big, app never reads them)
 DATA = ROOT / "data"                 # small artifacts the app reads
 MODELS = ROOT / "models"
-for p in (RAW, DATA, MODELS):
+for p in (RAW, BUILD, DATA, MODELS):
     p.mkdir(parents=True, exist_ok=True)
+
+# Europe's top 5 leagues. Keys are Understat's league codes. Places are configurable because
+# UEFA coefficients change them; "playoff" is the relegation play-off position (None = no play-off).
+LEAGUES = {
+    "EPL": {"name": "Premier League", "fdcouk": "E0", "tm": "GB1", "clubs": 20,
+            "cl": 4, "relegated": 3, "playoff": None},
+    "La_Liga": {"name": "La Liga", "fdcouk": "SP1", "tm": "ES1", "clubs": 20,
+                "cl": 4, "relegated": 3, "playoff": None},
+    "Serie_A": {"name": "Serie A", "fdcouk": "I1", "tm": "IT1", "clubs": 20,
+                "cl": 4, "relegated": 3, "playoff": None},
+    "Bundesliga": {"name": "Bundesliga", "fdcouk": "D1", "tm": "L1", "clubs": 18,
+                   "cl": 4, "relegated": 2, "playoff": 16},
+    "Ligue_1": {"name": "Ligue 1", "fdcouk": "F1", "tm": "FR1", "clubs": 18,
+                "cl": 3, "relegated": 2, "playoff": 16},
+}
+DEFAULT_LEAGUE = "EPL"
+TM_COMPETITIONS = [v["tm"] for v in LEAGUES.values()]
+
+# Understat's club names, tidied for display outside England (England uses TEAM_MAP below).
+DISPLAY_NAMES = {
+    "RasenBallsport Leipzig": "RB Leipzig",
+    "Borussia M.Gladbach": "Gladbach",
+    "Paris Saint Germain": "PSG",
+    "FC Cologne": "Köln",
+    "Bayer Leverkusen": "Leverkusen",
+    "Borussia Dortmund": "Dortmund",
+    "Eintracht Frankfurt": "Frankfurt",
+    "Atletico Madrid": "Atlético Madrid",
+    "Real Oviedo": "Oviedo",
+    "Parma Calcio 1913": "Parma",
+    "Deportivo La Coruna": "Deportivo",
+    "Alaves": "Alavés",
+    "Malaga": "Málaga",
+    "Mainz 05": "Mainz",
+    "VfB Stuttgart": "Stuttgart",
+    "Hamburger SV": "Hamburg",
+    "SC Freiburg": "Freiburg",
+    "Hertha Berlin": "Hertha",
+}
 
 USER_AGENT = "Mozilla/5.0 (footyminds data pipeline; weekly refresh)"
 
@@ -67,6 +107,14 @@ def canon_team(name: str | None) -> str | None:
     if name is None:
         return None
     return TEAM_MAP.get(str(name).strip().lower(), str(name).strip())
+
+
+def display_team(league: str, understat_title: str) -> str:
+    """The name we show for a club, from Understat's title. Understat is the reference source:
+    football-data.co.uk and Transfermarkt names are mapped onto these (see pipeline/clubs.py)."""
+    if league == "EPL":
+        return canon_team(understat_title)
+    return DISPLAY_NAMES.get(understat_title, understat_title)
 
 
 POSITIONS = {1: "GK", 2: "DEF", 3: "MID", 4: "FWD"}

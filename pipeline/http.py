@@ -13,6 +13,9 @@ _session.headers["User-Agent"] = USER_AGENT
 _CACHE = RAW / "http"
 _CACHE.mkdir(parents=True, exist_ok=True)
 
+# Sources that failed this run and were served from an older cached copy (reported by run_all).
+STALE: set[str] = set()
+
 
 def _path(url: str, suffix: str) -> Path:
     return _CACHE / (hashlib.sha1(url.encode()).hexdigest()[:16] + suffix)
@@ -35,6 +38,7 @@ def get_bytes(url: str, max_age_hours: float = 12, retries: int = 3) -> bytes:
         except requests.RequestException:
             if attempt == retries - 1:
                 if p.exists():  # stale cache beats no data
+                    STALE.add(url)
                     return p.read_bytes()
                 raise
             time.sleep(2 ** attempt)
@@ -54,6 +58,7 @@ def cached_json(key: str, fn, max_age_hours: float = 12):
         data = fn()
     except Exception:
         if p.exists():
+            STALE.add(key)
             return json.loads(p.read_text(encoding="utf-8"))
         raise
     p.write_text(json.dumps(data), encoding="utf-8")

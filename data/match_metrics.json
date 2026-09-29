@@ -1,41 +1,177 @@
 {
   "validation_season": 2025,
   "bookmaker": {
-    "log_loss": 1.0185,
-    "accuracy": 0.4895,
-    "n": 380
+    "log_loss": 0.979,
+    "accuracy": 0.5331,
+    "n": 1752
   },
   "always_home_win": {
-    "log_loss": 2.6505,
-    "accuracy": 0.4263,
-    "n": 380
+    "log_loss": 2.5875,
+    "accuracy": 0.4401,
+    "n": 1752
   },
   "base_rates": {
-    "log_loss": 1.0851,
-    "accuracy": 0.4263,
-    "n": 380
+    "log_loss": 1.0718,
+    "accuracy": 0.4401,
+    "n": 1752
   },
   "logistic": {
-    "log_loss": 1.0471,
-    "accuracy": 0.4921,
-    "n": 380
+    "log_loss": 0.9943,
+    "accuracy": 0.5194,
+    "n": 1752
   },
   "xgboost": {
-    "log_loss": 1.0513,
-    "accuracy": 0.4632,
-    "n": 380
+    "log_loss": 0.9953,
+    "accuracy": 0.5137,
+    "n": 1752
   },
   "chosen": "logistic",
-  "current_season": {
-    "model": {
-      "log_loss": 1.0546,
-      "accuracy": 0.4,
-      "n": 50
+  "by_league": {
+    "all": {
+      "model": {
+        "log_loss": 0.9943,
+        "accuracy": 0.5194,
+        "n": 1752
+      },
+      "bookmaker": {
+        "log_loss": 0.979,
+        "accuracy": 0.5331,
+        "n": 1752
+      }
     },
-    "bookmaker": {
-      "log_loss": 1.0523,
-      "accuracy": 0.44,
-      "n": 50
+    "Bundesliga": {
+      "model": {
+        "log_loss": 0.9628,
+        "accuracy": 0.5425,
+        "n": 306
+      },
+      "bookmaker": {
+        "log_loss": 0.9514,
+        "accuracy": 0.549,
+        "n": 306
+      }
+    },
+    "EPL": {
+      "model": {
+        "log_loss": 1.0395,
+        "accuracy": 0.4816,
+        "n": 380
+      },
+      "bookmaker": {
+        "log_loss": 1.0185,
+        "accuracy": 0.4895,
+        "n": 380
+      }
+    },
+    "La_Liga": {
+      "model": {
+        "log_loss": 0.9778,
+        "accuracy": 0.5211,
+        "n": 380
+      },
+      "bookmaker": {
+        "log_loss": 0.9637,
+        "accuracy": 0.55,
+        "n": 380
+      }
+    },
+    "Ligue_1": {
+      "model": {
+        "log_loss": 0.9865,
+        "accuracy": 0.5294,
+        "n": 306
+      },
+      "bookmaker": {
+        "log_loss": 0.9729,
+        "accuracy": 0.5425,
+        "n": 306
+      }
+    },
+    "Serie_A": {
+      "model": {
+        "log_loss": 0.9972,
+        "accuracy": 0.5289,
+        "n": 380
+      },
+      "bookmaker": {
+        "log_loss": 0.9821,
+        "accuracy": 0.5395,
+        "n": 380
+      }
+    }
+  },
+  "current_season": {
+    "all": {
+      "model": {
+        "log_loss": 0.9957,
+        "accuracy": 0.488,
+        "n": 250
+      },
+      "bookmaker": {
+        "log_loss": 0.9811,
+        "accuracy": 0.516,
+        "n": 250
+      }
+    },
+    "Bundesliga": {
+      "model": {
+        "log_loss": 0.9816,
+        "accuracy": 0.4722,
+        "n": 36
+      },
+      "bookmaker": {
+        "log_loss": 0.9525,
+        "accuracy": 0.5278,
+        "n": 36
+      }
+    },
+    "EPL": {
+      "model": {
+        "log_loss": 1.0494,
+        "accuracy": 0.4,
+        "n": 50
+      },
+      "bookmaker": {
+        "log_loss": 1.0523,
+        "accuracy": 0.44,
+        "n": 50
+      }
+    },
+    "La_Liga": {
+      "model": {
+        "log_loss": 0.9796,
+        "accuracy": 0.5072,
+        "n": 69
+      },
+      "bookmaker": {
+        "log_loss": 0.9472,
+        "accuracy": 0.5507,
+        "n": 69
+      }
+    },
+    "Ligue_1": {
+      "model": {
+        "log_loss": 1.0922,
+        "accuracy": 0.4444,
+        "n": 45
+      },
+      "bookmaker": {
+        "log_loss": 1.0437,
+        "accuracy": 0.4889,
+        "n": 45
+      }
+    },
+    "Serie_A": {
+      "model": {
+        "log_loss": 0.8874,
+        "accuracy": 0.6,
+        "n": 50
+      },
+      "bookmaker": {
+        "log_loss": 0.9211,
+        "accuracy": 0.56,
+        "n": 50
+      }
     }
   }
 }

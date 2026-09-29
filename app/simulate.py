@@ -28,7 +28,7 @@ def current_table(fixtures: pd.DataFrame, teams: list[str]) -> pd.DataFrame:
     done = fixtures[fixtures["finished"]]
     t = pd.DataFrame(0, index=teams, columns=["P", "W", "D", "L", "GF", "GA", "Pts"])
     for f in done.itertuples():
-        hg, ag = int(f.team_h_score), int(f.team_a_score)
+        hg, ag = int(f.home_goals), int(f.away_goals)
         for team, gf, ga in ((f.home, hg, ag), (f.away, ag, hg)):
             t.loc[team, ["P", "GF", "GA"]] += [1, gf, ga]
             res = "W" if gf > ga else "D" if gf == ga else "L"
@@ -41,9 +41,12 @@ def current_table(fixtures: pd.DataFrame, teams: list[str]) -> pd.DataFrame:
 
 
 def simulate(table: pd.DataFrame, remaining: pd.DataFrame, n: int = 10_000,
-             locked: dict[int, str] | None = None, seed: int = 7) -> dict:
+             locked: dict[str, str] | None = None, seed: int = 7,
+             cl: int = 4, relegated: int = 3, playoff: int | None = None) -> dict:
     """remaining: home, away, p_h, p_d, p_a (one row per fixture, index = fixture id).
-    locked: {fixture_id: "H" | "D" | "A"} forces a result (the what-if mode)."""
+    locked: {fixture_id: "H" | "D" | "A"} forces a result (the what-if mode).
+    cl / relegated / playoff: the league's Champions League places, relegation places and
+    relegation play-off position (e.g. 16th in the Bundesliga)."""
     teams = list(table.index)
     ti = {t: i for i, t in enumerate(teams)}
     T, F = len(teams), len(remaining)
@@ -81,9 +84,10 @@ def simulate(table: pd.DataFrame, remaining: pd.DataFrame, n: int = 10_000,
     out = pd.DataFrame(index=teams)
     out["exp_pts"] = pts.mean(0).round(1)
     out["title"] = dist[:, 0]
-    out["top4"] = dist[:, :4].sum(1)
-    out["top5"] = dist[:, :5].sum(1)
-    out["relegated"] = dist[:, -3:].sum(1)
+    out["cl"] = dist[:, :cl].sum(1)
+    out["relegated"] = dist[:, T - relegated:].sum(1)
+    if playoff:
+        out["playoff"] = dist[:, playoff - 1]
     out["avg_pos"] = (dist * np.arange(1, T + 1)).sum(1)
     return {"summary": out.sort_values(["exp_pts", "title"], ascending=False),
             "positions": pd.DataFrame(dist, index=teams, columns=range(1, T + 1))}

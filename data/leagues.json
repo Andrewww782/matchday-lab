@@ -1,0 +1,37 @@
+{
+  "EPL": {
+    "name": "Premier League",
+    "clubs": 20,
+    "cl": 4,
+    "relegated": 3,
+    "playoff": null
+  },
+  "La_Liga": {
+    "name": "La Liga",
+    "clubs": 20,
+    "cl": 4,
+    "relegated": 3,
+    "playoff": null
+  },
+  "Serie_A": {
+    "name": "Serie A",
+    "clubs": 20,
+    "cl": 4,
+    "relegated": 3,
+    "playoff": null
+  },
+  "Bundesliga": {
+    "name": "Bundesliga",
+    "clubs": 18,
+    "cl": 4,
+    "relegated": 2,
+    "playoff": 16
+  },
+  "Ligue_1": {
+    "name": "Ligue 1",
+    "clubs": 18,
+    "cl": 3,
+    "relegated": 2,
+    "playoff": 16
+  }
+}

@@ -13,22 +13,25 @@ if not data.available("fixtures", "upcoming"):
     ui.missing("The season simulator")
     st.stop()
 
-fx = data.table("fixtures")
-teams = data.teams()
-table = current_table(fx, teams)
-remaining = data.table("upcoming").set_index("fixture_id")
+league = ui.league_picker()
+rules = data.leagues()[league]
+round_name = "Gameweek" if league == "EPL" else "Matchday"
+fx = data.table("fixtures").query("league == @league")
+table = current_table(fx, data.teams(league))
+remaining = data.table("upcoming").query("league == @league").set_index("fixture_id")
 
-locked: dict = st.session_state.setdefault("whatif", {})
+# What-ifs are kept per league, so switching leagues doesn't mix them up.
+locked: dict = st.session_state.setdefault("whatif", {}).setdefault(league, {})
 
 with st.expander("What if…? Lock in some results", expanded=bool(locked)):
     gws = sorted(remaining["gw"].unique())
-    gw = st.selectbox("Gameweek", gws, format_func=lambda g: f"Gameweek {g}", key="sim_gw")
+    gw = st.selectbox(round_name, gws, format_func=lambda g: f"{round_name} {g}", key=f"sim_gw_{league}")
     view = remaining[remaining["gw"] == gw].sort_values("kickoff")
     RES = {"Model decides": None, "Home win": "H", "Draw": "D", "Away win": "A"}
     INV = {v: k for k, v in RES.items()}
     ed = pd.DataFrame({"Home": view["home"], "Away": view["away"],
                        "Result": [INV[locked.get(i)] for i in view.index]}, index=view.index)
-    out = st.data_editor(ed, hide_index=True, width="stretch", key=f"sim_edit_{gw}",
+    out = st.data_editor(ed, hide_index=True, width="stretch", key=f"sim_edit_{league}_{gw}",
                          disabled=["Home", "Away"],
                          column_config={"Result": st.column_config.SelectboxColumn(options=list(RES), required=True)})
     for fid, res in out["Result"].items():
@@ -44,25 +47,35 @@ with st.expander("What if…? Lock in some results", expanded=bool(locked)):
             st.rerun()
 
 
-@st.cache_data(ttl=3600, max_entries=64)
-def run(locked_items: tuple) -> dict:
-    return simulate(table, remaining, locked=dict(locked_items))
+@st.cache_data(ttl=3600, max_entries=128)
+def run(league: str, locked_items: tuple) -> dict:
+    fx = data.table("fixtures").query("league == @league")
+    table = current_table(fx, data.teams(league))
+    rem = data.table("upcoming").query("league == @league").set_index("fixture_id")
+    r = data.leagues()[league]
+    return simulate(table, rem, locked=dict(locked_items), cl=r["cl"], relegated=r["relegated"],
+                    playoff=r["playoff"])
 
 
-res = run(tuple(sorted(locked.items())))
+res = run(league, tuple(sorted(locked.items())))
 s = res["summary"].join(table[["Pts", "P"]])
 
 st.subheader("Chances by the end of the season")
-show = pd.DataFrame({
-    "Club": s.index, "Now": s["Pts"].astype(int), "Expected pts": s["exp_pts"].round(0).astype(int),
-    "Win the league": s["title"] * 100, "Top 4": s["top4"] * 100, "Top 5": s["top5"] * 100,
-    "Relegated": s["relegated"] * 100,
-})
+cols = {"Club": s.index, "Now": s["Pts"].astype(int), "Expected pts": s["exp_pts"].round(0).astype(int),
+        "Title": s["title"] * 100, "Champions League": s["cl"] * 100}
+if rules["playoff"]:
+    cols["Play-off"] = s["playoff"] * 100
+cols["Relegated"] = s["relegated"] * 100
+rule_text = f"Champions League = top {rules['cl']}. Relegated = bottom {rules['relegated']}."
+if rules["playoff"]:
+    rule_text += f" Play-off = {rules['playoff']}th, which plays a relegation play-off against a second-division side."
+st.caption(rule_text + " Places can change with UEFA's coefficient rankings.")
+show = pd.DataFrame(cols)
 pct = st.column_config.ProgressColumn(format="%.0f%%", min_value=0, max_value=100)
-st.dataframe(show, hide_index=True, width="stretch", height=740,
-             column_config={"Win the league": pct, "Top 4": pct, "Top 5": pct, "Relegated": pct,
+st.dataframe(show, hide_index=True, width="stretch", height=38 + 35 * len(show),
+             column_config={c: pct for c in list(cols)[3:]} | {
                             "Now": st.column_config.NumberColumn("Points now"),
-                            "Expected pts": st.column_config.NumberColumn("Expected final points")})
+                            "Expected pts": st.column_config.NumberColumn("Final pts (expected)")})
 
 st.subheader("Where each club could finish")
 pos = res["positions"].loc[s.index]
@@ -70,7 +83,7 @@ fig = px.imshow(pos.to_numpy(), x=[str(c) for c in pos.columns], y=pos.index.tol
                 color_continuous_scale="Greens", aspect="auto", zmin=0, zmax=float(pos.to_numpy().max()),
                 labels=dict(x="Finishing position", y="", color="Chance"))
 fig.update_traces(hovertemplate="%{y}: %{z:.0%} chance of finishing %{x}<extra></extra>")
-fig.update_layout(height=620, margin=dict(l=0, r=0, t=10, b=0), coloraxis_showscale=False)
+fig.update_layout(height=30 * len(pos) + 20, margin=dict(l=0, r=0, t=10, b=0), coloraxis_showscale=False)
 st.plotly_chart(fig, width="stretch")
 
 with st.expander("Current table"):

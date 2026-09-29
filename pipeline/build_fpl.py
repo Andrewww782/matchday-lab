@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import poisson
 
-from pipeline.config import DATA
+from pipeline.config import BUILD, DATA
 from pipeline.sources import fpl
 
 HORIZON = 5
@@ -104,14 +104,14 @@ def expected_points(p: pd.DataFrame, up: pd.DataFrame, scoring: dict) -> pd.Data
 
 
 def main():
-    p = pd.read_parquet(DATA / "players.parquet")
+    p = pd.read_parquet(BUILD / "epl_players.parquet")  # FPL is Premier League only
     boot = pd.DataFrame(fpl.bootstrap()["elements"])[["code", "penalties_order"]]
     p = p.merge(boot, on="code", how="left")
     scoring = fpl.bootstrap()["game_config"]["scoring"]
-    up = pd.read_parquet(DATA / "upcoming.parquet")
+    up = pd.read_parquet(DATA / "upcoming.parquet").query("league == 'EPL'")
     next_gw = int(up.gw.min())
     up = up[up.gw < next_gw + HORIZON]
-    up = fixture_goals(up, pd.read_parquet(DATA / "team_state.parquet"))
+    up = fixture_goals(up, pd.read_parquet(DATA / "team_state.parquet").query("league == 'EPL'"))
     xp = expected_points(p, up, scoring)
     xp.to_parquet(DATA / "fpl_xpts.parquet", index=False)
 

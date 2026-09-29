@@ -31,9 +31,9 @@ with st.sidebar:
     st.markdown("### ⚽ FootyMinds")
     if data.available("players"):
         idx = data.player_index()
-        labels = idx.set_index("code")["label"].to_dict()
-        found = st.selectbox("Find a player", idx["code"].tolist(), index=None,
-                             format_func=lambda c: labels[c], placeholder="Search any player…",
+        labels = idx.set_index("pid")["label"].to_dict()
+        found = st.selectbox("Find a player", idx["pid"].tolist(), index=None,
+                             format_func=lambda c: labels[c], placeholder="Any player in Europe's top 5…",
                              key="sidebar_find")
         if found is not None:
             q = {"player": labels[found]}  # bound widgets read their label from the URL
@@ -44,7 +44,7 @@ with st.sidebar:
     m = data.meta("meta")
     if m:
         when = pd.Timestamp(m["updated_at"]).strftime("%d %b %Y")
-        st.caption(f"{m['season']} · data up to GW{m['last_finished_gw']} · updated {when}")
-    st.caption("Not affiliated with the Premier League or FPL. Just for fun — not betting advice.")
+        st.caption(f"{m['season']} · Premier League, La Liga, Serie A, Bundesliga, Ligue 1 · updated {when}")
+    st.caption("Not affiliated with any league, club or FPL. Just for fun, not betting advice.")
 
 nav.run()

@@ -54,158 +54,265 @@
       "recoveries"
     ]
   },
+  "att_stats": {
+    "DEF": [
+      "xGBuildup",
+      "xA",
+      "key_passes",
+      "npxG",
+      "xGChain"
+    ],
+    "MID": [
+      "goals",
+      "npxG",
+      "shots",
+      "xA",
+      "key_passes",
+      "xGChain",
+      "xGBuildup"
+    ],
+    "FWD": [
+      "goals",
+      "npxG",
+      "shots",
+      "xA",
+      "key_passes",
+      "xGChain",
+      "xGBuildup"
+    ]
+  },
   "clusters": {
-    "GK": {
-      "Shot-stopper": {
-        "saves": 0.55,
-        "goals_prevented": 0.33,
-        "xGBuildup": -0.51,
-        "recoveries": 0.37
+    "full": {
+      "DEF": {
+        "Ball-playing defender": {
+          "tackles": 0.01,
+          "cbi": -0.36,
+          "recoveries": 0.6,
+          "xGBuildup": 1.84,
+          "xA": 0.01,
+          "key_passes": 0.03,
+          "npxG": -0.44,
+          "xGChain": 1.56
+        },
+        "Front-foot defender": {
+          "tackles": 0.34,
+          "cbi": -0.59,
+          "recoveries": 0.06,
+          "xGBuildup": -0.48,
+          "xA": -0.06,
+          "key_passes": 0.04,
+          "npxG": -0.46,
+          "xGChain": -0.42
+        },
+        "Attacking full-back": {
+          "tackles": 0.87,
+          "cbi": -0.87,
+          "recoveries": 0.8,
+          "xGBuildup": 0.15,
+          "xA": 1.34,
+          "key_passes": 1.41,
+          "npxG": 0.78,
+          "xGChain": 0.65
+        },
+        "Stopper": {
+          "tackles": -0.66,
+          "cbi": 0.95,
+          "recoveries": -0.64,
+          "xGBuildup": -0.41,
+          "xA": -0.61,
+          "key_passes": -0.72,
+          "npxG": 0.08,
+          "xGChain": -0.6
+        }
       },
-      "Sweeper keeper": {
-        "saves": -0.6,
-        "goals_prevented": -0.36,
-        "xGBuildup": 0.56,
-        "recoveries": -0.41
+      "MID": {
+        "Goal-scoring midfielder": {
+          "goals": 1.14,
+          "npxG": 1.02,
+          "shots": 0.94,
+          "xA": 0.24,
+          "key_passes": 0.09,
+          "xGChain": 0.35,
+          "xGBuildup": -0.39,
+          "tackles": -0.9,
+          "cbi": -0.67,
+          "recoveries": -0.76
+        },
+        "Ball winner": {
+          "goals": -0.88,
+          "npxG": -0.93,
+          "shots": -1.1,
+          "xA": -0.8,
+          "key_passes": -0.73,
+          "xGChain": -0.51,
+          "xGBuildup": 0.39,
+          "tackles": 0.75,
+          "cbi": 1.13,
+          "recoveries": 0.58
+        },
+        "Box-to-box": {
+          "goals": -0.12,
+          "npxG": -0.21,
+          "shots": 0.12,
+          "xA": 0.28,
+          "key_passes": 0.38,
+          "xGChain": -0.03,
+          "xGBuildup": 0.06,
+          "tackles": 0.39,
+          "cbi": -0.13,
+          "recoveries": 0.52
+        },
+        "Creator": {
+          "goals": 0.61,
+          "npxG": 1.28,
+          "shots": 1.26,
+          "xA": 1.89,
+          "key_passes": 1.87,
+          "xGChain": 2.11,
+          "xGBuildup": 1.11,
+          "tackles": -0.67,
+          "cbi": -0.98,
+          "recoveries": -0.22
+        },
+        "Deep playmaker": {
+          "goals": -0.26,
+          "npxG": -0.25,
+          "shots": -0.41,
+          "xA": -0.66,
+          "key_passes": -0.72,
+          "xGChain": -0.95,
+          "xGBuildup": -1.07,
+          "tackles": -0.37,
+          "cbi": -0.29,
+          "recoveries": -0.82
+        }
+      },
+      "FWD": {
+        "Poacher": {
+          "goals": 0.88,
+          "npxG": 0.79,
+          "shots": 0.48,
+          "xA": -0.63,
+          "key_passes": -0.76,
+          "xGChain": 0.26,
+          "xGBuildup": -0.73,
+          "tackles": -0.42,
+          "recoveries": -0.49
+        },
+        "Creative forward": {
+          "goals": 0.07,
+          "npxG": 0.09,
+          "shots": 0.45,
+          "xA": 1.38,
+          "key_passes": 1.31,
+          "xGChain": 0.7,
+          "xGBuildup": 0.93,
+          "tackles": 0.8,
+          "recoveries": 0.92
+        },
+        "Pressing forward": {
+          "goals": -0.66,
+          "npxG": -0.61,
+          "shots": -0.6,
+          "xA": -0.34,
+          "key_passes": -0.21,
+          "xGChain": -0.59,
+          "xGBuildup": -0.01,
+          "tackles": -0.15,
+          "recoveries": -0.17
+        }
       }
     },
-    "DEF": {
-      "Attacking full-back": {
-        "tackles": 0.93,
-        "cbi": -0.96,
-        "recoveries": 0.78,
-        "xGBuildup": 0.52,
-        "xA": 1.43,
-        "key_passes": 1.44,
-        "npxG": 0.54,
-        "xGChain": 0.96
+    "attacking": {
+      "DEF": {
+        "Stay-at-home defender": {
+          "xGBuildup": -0.52,
+          "xA": -0.36,
+          "key_passes": -0.36,
+          "npxG": -0.26,
+          "xGChain": -0.58
+        },
+        "Ball-playing defender": {
+          "xGBuildup": 1.22,
+          "xA": -0.19,
+          "key_passes": -0.2,
+          "npxG": 0.44,
+          "xGChain": 1.01
+        },
+        "Attacking full-back": {
+          "xGBuildup": 0.4,
+          "xA": 1.8,
+          "key_passes": 1.79,
+          "npxG": 0.43,
+          "xGChain": 0.92
+        }
       },
-      "Stopper": {
-        "tackles": -0.64,
-        "cbi": 0.89,
-        "recoveries": -0.68,
-        "xGBuildup": -0.45,
-        "xA": -0.66,
-        "key_passes": -0.74,
-        "npxG": 0.15,
-        "xGChain": -0.64
+      "MID": {
+        "Creator": {
+          "goals": -0.29,
+          "npxG": -0.33,
+          "shots": -0.24,
+          "xA": 0.65,
+          "key_passes": 0.72,
+          "xGChain": 0.58,
+          "xGBuildup": 0.83
+        },
+        "Holding midfielder": {
+          "goals": -0.56,
+          "npxG": -0.59,
+          "shots": -0.62,
+          "xA": -0.65,
+          "key_passes": -0.64,
+          "xGChain": -0.7,
+          "xGBuildup": -0.37
+        },
+        "Goal-scoring midfielder": {
+          "goals": 1.37,
+          "npxG": 1.57,
+          "shots": 1.58,
+          "xA": 1.64,
+          "key_passes": 1.54,
+          "xGChain": 1.85,
+          "xGBuildup": 0.91
+        },
+        "Deep playmaker": {
+          "goals": 1.03,
+          "npxG": 1.03,
+          "shots": 1.01,
+          "xA": 0.02,
+          "key_passes": -0.03,
+          "xGChain": 0.12,
+          "xGBuildup": -0.5
+        }
       },
-      "Ball-playing defender": {
-        "tackles": -0.28,
-        "cbi": 0.13,
-        "recoveries": 0.59,
-        "xGBuildup": 1.52,
-        "xA": -0.36,
-        "key_passes": -0.3,
-        "npxG": -0.46,
-        "xGChain": 1.22
-      },
-      "Front-foot defender": {
-        "tackles": 0.38,
-        "cbi": -0.62,
-        "recoveries": 0.09,
-        "xGBuildup": -0.53,
-        "xA": 0.09,
-        "key_passes": 0.15,
-        "npxG": -0.36,
-        "xGChain": -0.41
-      }
-    },
-    "MID": {
-      "Box-to-box": {
-        "goals": 0.1,
-        "npxG": 0.08,
-        "shots": 0.32,
-        "xA": 0.5,
-        "key_passes": 0.54,
-        "xGChain": 0.07,
-        "xGBuildup": -0.14,
-        "tackles": -0.09,
-        "cbi": -0.51,
-        "recoveries": 0.11
-      },
-      "Ball winner": {
-        "goals": -0.7,
-        "npxG": -0.77,
-        "shots": -0.85,
-        "xA": -0.66,
-        "key_passes": -0.61,
-        "xGChain": -0.38,
-        "xGBuildup": 0.51,
-        "tackles": 0.94,
-        "cbi": 1.17,
-        "recoveries": 0.93
-      },
-      "Deep playmaker": {
-        "goals": -0.59,
-        "npxG": -0.6,
-        "shots": -0.72,
-        "xA": -0.77,
-        "key_passes": -0.73,
-        "xGChain": -0.89,
-        "xGBuildup": -0.62,
-        "tackles": -0.14,
-        "cbi": 0.07,
-        "recoveries": -0.65
-      },
-      "Goal-scoring midfielder": {
-        "goals": 1.74,
-        "npxG": 1.38,
-        "shots": 1.19,
-        "xA": 0.06,
-        "key_passes": -0.16,
-        "xGChain": 0.58,
-        "xGBuildup": -0.35,
-        "tackles": -0.98,
-        "cbi": -0.51,
-        "recoveries": -0.92
-      },
-      "Creator": {
-        "goals": 0.54,
-        "npxG": 1.38,
-        "shots": 1.29,
-        "xA": 1.89,
-        "key_passes": 1.8,
-        "xGChain": 2.12,
-        "xGBuildup": 1.02,
-        "tackles": -0.68,
-        "cbi": -1.0,
-        "recoveries": -0.22
-      }
-    },
-    "FWD": {
-      "Poacher": {
-        "goals": 0.34,
-        "npxG": 0.12,
-        "shots": -0.2,
-        "xA": -0.77,
-        "key_passes": -0.69,
-        "xGChain": -0.35,
-        "xGBuildup": -0.72,
-        "tackles": -0.63,
-        "recoveries": -0.55
-      },
-      "Pressing forward": {
-        "goals": -0.66,
-        "npxG": -0.62,
-        "shots": -0.3,
-        "xA": 0.37,
-        "key_passes": 0.19,
-        "xGChain": -0.32,
-        "xGBuildup": 0.14,
-        "tackles": 0.58,
-        "recoveries": 0.26
-      },
-      "Complete forward": {
-        "goals": 0.68,
-        "npxG": 1.14,
-        "shots": 1.22,
-        "xA": 1.06,
-        "key_passes": 1.3,
-        "xGChain": 1.62,
-        "xGBuildup": 1.49,
-        "tackles": 0.22,
-        "recoveries": 0.76
+      "FWD": {
+        "Link-up forward": {
+          "goals": -0.62,
+          "npxG": -0.69,
+          "shots": -0.58,
+          "xA": -0.08,
+          "key_passes": -0.03,
+          "xGChain": -0.57,
+          "xGBuildup": -0.12
+        },
+        "Poacher": {
+          "goals": 0.75,
+          "npxG": 0.95,
+          "shots": 0.59,
+          "xA": -0.5,
+          "key_passes": -0.55,
+          "xGChain": 0.32,
+          "xGBuildup": -0.43
+        },
+        "Creative forward": {
+          "goals": 0.67,
+          "npxG": 0.41,
+          "shots": 0.88,
+          "xA": 1.61,
+          "key_passes": 1.55,
+          "xGChain": 1.55,
+          "xGBuildup": 1.58
+        }
       }
     }
   },
