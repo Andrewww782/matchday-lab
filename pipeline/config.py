@@ -8,7 +8,7 @@ MODELS = ROOT / "models"
 for p in (RAW, DATA, MODELS):
     p.mkdir(parents=True, exist_ok=True)
 
-USER_AGENT = "Mozilla/5.0 (matchday-lab data pipeline; weekly refresh)"
+USER_AGENT = "Mozilla/5.0 (footyminds data pipeline; weekly refresh)"
 
 # Season start years. 2026 == the 2026/27 season.
 CURRENT_SEASON = 2026

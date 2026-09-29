@@ -3,7 +3,7 @@ import requests
 import streamlit as st
 
 API = "https://fantasy.premierleague.com/api"
-HEADERS = {"User-Agent": "Mozilla/5.0 (Matchday Lab)"}
+HEADERS = {"User-Agent": "Mozilla/5.0 (FootyMinds)"}
 
 
 class FplError(Exception):

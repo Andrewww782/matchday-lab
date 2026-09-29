@@ -1,4 +1,4 @@
-# Matchday Lab
+# FootyMinds
 
 A simple web app for Premier League fans that combines three ML projects (plus extras) in one place:
 

@@ -44,7 +44,7 @@ jobs:
 
       - name: Commit refreshed data (Streamlit Cloud redeploys on push)
         run: |
-          git config user.name "matchday-lab-bot"
+          git config user.name "footyminds-bot"
           git config user.email "actions@users.noreply.github.com"
           git add data/*.parquet data/*.json models/
           git diff --cached --quiet && echo "No changes" && exit 0

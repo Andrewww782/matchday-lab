@@ -1,10 +1,10 @@
-"""Matchday Lab - Premier League predictions, player values and scouting for fans."""
+"""FootyMinds - Premier League predictions, player values and scouting for fans."""
 import pandas as pd
 import streamlit as st
 
 from app import data, ui
 
-st.set_page_config(page_title="Matchday Lab", page_icon="⚽", layout="wide")
+st.set_page_config(page_title="FootyMinds", page_icon="⚽", layout="wide")
 ui.inject_css()
 
 PAGES = {
@@ -28,7 +28,7 @@ nav = st.navigation({
 })
 
 with st.sidebar:
-    st.markdown("### ⚽ Matchday Lab")
+    st.markdown("### ⚽ FootyMinds")
     if data.available("players"):
         idx = data.player_index()
         labels = idx.set_index("code")["label"].to_dict()

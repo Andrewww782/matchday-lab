@@ -9,7 +9,7 @@ mm = data.meta("match_metrics")
 vm = data.meta("value_metrics")
 
 st.markdown(f"""
-Matchday Lab turns free football data into answers fans actually care about. The data refreshes every
+FootyMinds turns free football data into answers fans actually care about. The data refreshes every
 week{f" (last update: {pd.Timestamp(m['updated_at']).strftime('%d %B %Y')})" if m else ""}.
 
 ### Where the numbers come from
