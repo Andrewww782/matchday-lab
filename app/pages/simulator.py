@@ -62,6 +62,7 @@ s = res["summary"].join(table[["Pts", "P"]])
 
 st.subheader("Chances by the end of the season")
 cols = {"Club": s.index, "Now": s["Pts"].astype(int), "Expected pts": s["exp_pts"].round(0).astype(int),
+        "Exp GD": s["exp_gd"].astype(int),
         "Title": s["title"] * 100, "Champions League": s["cl"] * 100}
 if rules["playoff"]:
     cols["Play-off"] = s["playoff"] * 100
@@ -73,9 +74,10 @@ st.caption(rule_text + " Places can change with UEFA's coefficient rankings.")
 show = pd.DataFrame(cols)
 pct = st.column_config.ProgressColumn(format="%.0f%%", min_value=0, max_value=100)
 st.dataframe(show, hide_index=True, width="stretch", height=38 + 35 * len(show),
-             column_config={c: pct for c in list(cols)[3:]} | {
+             column_config={c: pct for c in list(cols)[4:]} | {
                             "Now": st.column_config.NumberColumn("Points now"),
-                            "Expected pts": st.column_config.NumberColumn("Final pts (expected)")})
+                            "Expected pts": st.column_config.NumberColumn("Final pts (expected)"),
+                            "Exp GD": st.column_config.NumberColumn("Goal diff (expected)", format="%+d")})
 
 st.subheader("Where each club could finish")
 pos = res["positions"].loc[s.index]
@@ -93,7 +95,8 @@ ui.how_it_works("""
 Each remaining game is played out using our win/draw/loss chances for it, based on each club's current
 strength and form. Because nobody knows exactly how good a club really is, every simulated season also
 nudges each club a little stronger or weaker for the rest of the year (think injuries, signings or a
-new manager). Winning margins are drawn at random to settle goal-difference ties. Repeat
+new manager). Each simulated game also gets a realistic scoreline from the goals model, so ties on
+points are settled by goal difference and then goals scored, just like the real table. Repeat
 10,000 times, count the outcomes, and you get the percentages above. It can't see specific injuries or
 transfers coming, so the further away the end of the season, the rougher the guide.
 """)

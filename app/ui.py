@@ -77,6 +77,25 @@ def why_bars(items: list[tuple[str, float]], left: str, right: str, unit: str = 
             f'<div class="ml-why">{"".join(body)}</div>')
 
 
+def parse_scores(top_scores: str) -> list[tuple[str, float]]:
+    """'1-0:0.1390|2-0:0.1325|...' -> [('1–0', 0.139), ...]"""
+    out = []
+    for part in str(top_scores).split("|"):
+        if ":" in part:
+            s, p = part.split(":")
+            out.append((s.replace("-", "–"), float(p)))
+    return out
+
+
+def score_chips(top_scores: str, n: int = 5) -> str:
+    chips = []
+    for k, (s, p) in enumerate(parse_scores(top_scores)[:n]):
+        strong = "font-size:1.05rem;" if k == 0 else ""
+        chips.append(f'<span class="ml-pill" style="{strong}background:rgba(128,128,128,.12);'
+                     f'border:1px solid rgba(128,128,128,.35);margin:0 .35rem .35rem 0">{s} · {p:.0%}</span>')
+    return '<div style="display:flex;flex-wrap:wrap">' + "".join(chips) + "</div>"
+
+
 def pill(text: str, colour: str) -> str:
     return f'<span class="ml-pill" style="background:{colour}22;color:{colour};border:1px solid {colour}66">{html.escape(text)}</span>'
 

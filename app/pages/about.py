@@ -24,33 +24,37 @@ leagues. The data refreshes twice a week{f" (last update: {pd.Timestamp(m['updat
 
 st.markdown("### Coverage and accuracy by league")
 lg = data.leagues()
-by_match = mm.get("by_league", {})
-by_value = vm.get("by_league", {})
+gm = data.meta("goals_metrics")
+head = mm.get("headline", mm)
+by_match, by_value, by_goals = head.get("by_league", {}), vm.get("by_league", {}), gm.get("by_league", {})
 rows = []
 for k, cfg in lg.items():
-    bm, bv = by_match.get(k, {}), by_value.get(k, {})
+    bm, bv, bg = by_match.get(k, {}), by_value.get(k, {}), by_goals.get(k, {})
     rows.append({
         "League": cfg["name"],
-        "Results called (last season)": f"{bm['model']['accuracy']:.0%}" if bm else "–",
-        "Bookmakers": f"{bm['bookmaker']['accuracy']:.0%}" if bm else "–",
+        "Results called (us / bookies)": f"{bm['model']['accuracy']:.0%} / {bm['bookmaker']['accuracy']:.0%}" if bm else "–",
+        "Over/under 2.5 (us / bookies)": f"{bg['over25_accuracy']:.0%} / {bg['over25_accuracy_bookmaker']:.0%}" if bg else "–",
+        "Exact score in our top 3": f"{bg['top3_hit']:.0%}" if bg else "–",
         "Player values: typical error": f"{bv['median_pct_error']:.0f}%" if bv else "–",
         "Defensive stats & keepers": "Yes" if k == "EPL" else "No",
         "Fantasy (FPL)": "Yes" if k == "EPL" else "No",
     })
 st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
-st.caption("\"Results called\" means the outcome we rated most likely actually happened, tested on the "
-           "whole 2025/26 season. \"Typical error\" is the median gap between our value and Transfermarkt's.")
+st.caption("All tested on the whole 2025/26 season, using only games before each one. \"Results called\" "
+           "means the outcome we rated most likely happened. \"Typical error\" is the median gap between our "
+           "value and Transfermarkt's.")
 
-if mm:
-    ch = mm[mm["chosen"]]
+if head.get("by_league", {}).get("all"):
+    a = head["by_league"]["all"]
     c1, c2, c3 = st.columns(3)
-    c1.metric("All five leagues: results called", f"{ch['accuracy']:.0%}")
-    c2.metric("Bookmakers, same games", f"{mm['bookmaker']['accuracy']:.0%}")
+    c1.metric("All five leagues: results called", f"{a['model']['accuracy']:.0%}")
+    c2.metric("Bookmakers, same games", f"{a['bookmaker']['accuracy']:.0%}")
     c3.metric("Guessing 'home win' every time", f"{mm['always_home_win']['accuracy']:.0%}")
 
 st.markdown("""
 ### Things to know
-- These are **probabilities, not certainties**. A 60% favourite still fails to win 4 times in 10.
+- These are **probabilities, not certainties**. A 60% favourite still fails to win 4 times in 10, and
+  even the single most likely scoreline usually happens only about 1 time in 8.
 - The models don't know about injuries or suspensions beyond what's in the data.
 - Newly promoted clubs have less data, so their predictions and player values are less certain.
   Players at clubs promoted from second divisions often have no Transfermarkt value in the free data.

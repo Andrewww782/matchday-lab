@@ -2,7 +2,29 @@
 import numpy as np
 import pandas as pd
 
-WIN_MARGIN_EXTRA = 0.55  # winning margin ~ 1 + Poisson(0.55): roughly the PL's real spread
+GRID_N = 10  # score grids cover 0..9 goals per side (from the goals model)
+_I, _J = np.divmod(np.arange(GRID_N * GRID_N), GRID_N)            # home goals, away goals per cell
+_REGIONS = (_I > _J, _I == _J, _I < _J)                            # home win, draw, away win
+
+
+def _draw_scores(grids: np.ndarray, outcome: np.ndarray, rng) -> tuple[np.ndarray, np.ndarray]:
+    """Given each simulated result, draw a scoreline from that fixture's score chances for that
+    result (a simulated 'home win' becomes 1-0, 2-1, 3-0... in realistic proportions)."""
+    n, F = outcome.shape
+    hg = np.zeros((n, F), np.int8)
+    ag = np.zeros((n, F), np.int8)
+    u = rng.random((n, F))
+    for f in range(F):
+        g = grids[f]
+        for k, region in enumerate(_REGIONS):
+            rows = outcome[:, f] == k
+            if not rows.any():
+                continue
+            w = np.where(region, g, 0.0)
+            cdf = np.cumsum(w) / w.sum()
+            cell = np.minimum(np.searchsorted(cdf, u[rows, f]), len(cdf) - 1)
+            hg[rows, f], ag[rows, f] = _I[cell], _J[cell]
+    return hg, ag
 STRENGTH_SD = 0.35       # how far a club's true level may differ from today's estimate (log-odds)
 
 
@@ -71,11 +93,15 @@ def simulate(table: pd.DataFrame, remaining: pd.DataFrame, n: int = 10_000,
     away_pts = np.select([outcome == 2, outcome == 1], [3, 1], 0).astype(np.float32)
     pts = table["Pts"].to_numpy(np.float32) + home_pts @ H + away_pts @ A
 
-    margin = (1 + rng.poisson(WIN_MARGIN_EXTRA, (n, F))).astype(np.float32)
-    home_gd = np.where(outcome == 0, margin, np.where(outcome == 2, -margin, 0)).astype(np.float32)
-    gd = table["GD"].to_numpy(np.float32) + home_gd @ H - home_gd @ A
+    grids = np.stack(remaining["grid"].to_numpy()).astype(float) if F else np.zeros((0, GRID_N ** 2))
+    hg, ag = _draw_scores(grids, outcome, rng)
+    hg, ag = hg.astype(np.float32), ag.astype(np.float32)
+    gf = table["GF"].to_numpy(np.float32) + hg @ H + ag @ A
+    ga = table["GA"].to_numpy(np.float32) + ag @ H + hg @ A
+    gd = gf - ga
 
-    score = pts * 1000 + gd + rng.random((n, T), dtype=np.float32) * 0.1
+    # Ranking: points, then goal difference, then goals scored, then a coin toss.
+    score = pts * 1e6 + (gd + 500) * 1e3 + gf + rng.random((n, T), dtype=np.float32) * 0.5
     order = np.argsort(-score, axis=1)
     pos = np.empty_like(order)
     pos[np.arange(n)[:, None], order] = np.arange(T)
@@ -83,6 +109,7 @@ def simulate(table: pd.DataFrame, remaining: pd.DataFrame, n: int = 10_000,
 
     out = pd.DataFrame(index=teams)
     out["exp_pts"] = pts.mean(0).round(1)
+    out["exp_gd"] = gd.mean(0).round(0)
     out["title"] = dist[:, 0]
     out["cl"] = dist[:, :cl].sum(1)
     out["relegated"] = dist[:, T - relegated:].sum(1)

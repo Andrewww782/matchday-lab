@@ -21,8 +21,8 @@
     "n": 1752
   },
   "xgboost": {
-    "log_loss": 0.9956,
-    "accuracy": 0.5148,
+    "log_loss": 0.9953,
+    "accuracy": 0.5137,
     "n": 1752
   },
   "chosen": "logistic",
@@ -171,6 +171,121 @@
         "log_loss": 0.9211,
         "accuracy": 0.56,
         "n": 50
+      }
+    }
+  },
+  "headline": {
+    "method": "average of the form model and the goals model",
+    "by_league": {
+      "EPL": {
+        "model": {
+          "accuracy": 0.4868,
+          "log_loss": 1.0254,
+          "n": 380
+        },
+        "bookmaker": {
+          "accuracy": 0.4895,
+          "log_loss": 1.0185
+        }
+      },
+      "La_Liga": {
+        "model": {
+          "accuracy": 0.5211,
+          "log_loss": 0.9741,
+          "n": 380
+        },
+        "bookmaker": {
+          "accuracy": 0.55,
+          "log_loss": 0.9637
+        }
+      },
+      "Serie_A": {
+        "model": {
+          "accuracy": 0.5211,
+          "log_loss": 0.9945,
+          "n": 380
+        },
+        "bookmaker": {
+          "accuracy": 0.5395,
+          "log_loss": 0.9821
+        }
+      },
+      "Bundesliga": {
+        "model": {
+          "accuracy": 0.549,
+          "log_loss": 0.9624,
+          "n": 306
+        },
+        "bookmaker": {
+          "accuracy": 0.549,
+          "log_loss": 0.9514
+        }
+      },
+      "Ligue_1": {
+        "model": {
+          "accuracy": 0.5294,
+          "log_loss": 0.9845,
+          "n": 306
+        },
+        "bookmaker": {
+          "accuracy": 0.5425,
+          "log_loss": 0.9729
+        }
+      },
+      "all": {
+        "model": {
+          "accuracy": 0.52
+        },
+        "bookmaker": {
+          "accuracy": 0.5331
+        }
+      }
+    },
+    "current_season": {
+      "Bundesliga": {
+        "model": {
+          "accuracy": 0.5,
+          "n": 36
+        },
+        "bookmaker": {
+          "accuracy": 0.5278
+        }
+      },
+      "EPL": {
+        "model": {
+          "accuracy": 0.42,
+          "n": 50
+        },
+        "bookmaker": {
+          "accuracy": 0.44
+        }
+      },
+      "La_Liga": {
+        "model": {
+          "accuracy": 0.5217,
+          "n": 69
+        },
+        "bookmaker": {
+          "accuracy": 0.5507
+        }
+      },
+      "Ligue_1": {
+        "model": {
+          "accuracy": 0.4222,
+          "n": 45
+        },
+        "bookmaker": {
+          "accuracy": 0.4889
+        }
+      },
+      "Serie_A": {
+        "model": {
+          "accuracy": 0.62,
+          "n": 50
+        },
+        "bookmaker": {
+          "accuracy": 0.56
+        }
       }
     }
   }

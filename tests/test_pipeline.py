@@ -149,3 +149,77 @@ def test_simulator_totals_and_bands(league):
     assert s["relegated"].sum() == pytest.approx(LEAGUES[league]["relegated"], abs=1e-6)
     if LEAGUES[league]["playoff"]:
         assert s["playoff"].sum() == pytest.approx(1, abs=1e-6)
+
+
+# ----------------------------------------------------------------------------- goals model
+
+@pytest.fixture(scope="module")
+def goals_metrics():
+    return json.loads((DATA / "goals_metrics.json").read_text())
+
+
+@pytest.mark.parametrize("name", ["upcoming", "pair_probs"])
+def test_score_grids_are_consistent(name):
+    df = pd.read_parquet(DATA / f"{name}.parquet")
+    g = np.stack(df["grid"].to_numpy()).reshape(-1, 10, 10)
+    # 0-9 goals per side holds essentially all of the probability, even for Bayern at home...
+    total = g.sum(axis=(1, 2))
+    assert (total <= 1 + 1e-4).all() and (total >= 0.99).all()
+    i, j = np.indices((10, 10))
+    # ...and agrees with the headline win/draw/loss and the summary numbers, up to the sliver of
+    # probability beyond 9 goals (never more than that).
+    outside = (1 - total) + 1e-3
+    for cells, col in [(g[:, i > j].sum(1), "p_h"), (g[:, i == j].sum(1), "p_d"),
+                       (g[:, 0, :].sum(1), "p_cs_a"), (g[:, 1:, 1:].sum((1, 2)), "p_btts")]:
+        assert (np.abs(df[col] - cells) <= outside).all(), col
+    assert ((df[["p_btts", "p_over25", "p_cs_h", "p_cs_a"]] >= 0) & (df[["p_btts", "p_over25", "p_cs_h", "p_cs_a"]] <= 1)).all().all()
+    # The most likely score really is the biggest cell.
+    top = df["top_scores"].str.split("|").str[0].str.split(":").str[0].str.split("-")
+    k = g.reshape(len(df), -1).argmax(1)
+    assert all(int(t[0]) == kk // 10 and int(t[1]) == kk % 10 for t, kk in zip(top, k))
+
+
+@pytest.mark.parametrize("league", list(LEAGUES))
+def test_goals_model_backtest(goals_metrics, league):
+    r = goals_metrics["by_league"][league]
+    assert abs(r["avg_goals_predicted"] - r["avg_goals_actual"]) <= 0.15
+    assert r["score_logloss"] < r["score_logloss_baseline"]
+    # Within 0.03 of the bookmakers, and not trailing last seasons' simple over-2.5 rate by more
+    # than the bookmakers do (in low-scoring 2025/26 Serie A, neither beat it).
+    assert r["over25_logloss"] - r["over25_logloss_bookmaker"] <= 0.03
+    assert r["over25_logloss"] - r["over25_logloss_base_rate"] <=         max(0.0, r["over25_logloss_bookmaker"] - r["over25_logloss_base_rate"]) + 0.01
+    # The headline blend was adopted because it beat the form model on its own.
+    assert r["wdl_logloss_blend"] <= r["wdl_logloss_match_model"]
+
+
+def test_goals_backtest_never_peeks():
+    from pipeline import train_goals as tg
+    m = build_table("matches")
+    lg = m[m["league"] == "EPL"]
+    tgt = lg[(lg["season"] == lg["season"].max() - 1)].head(30)
+    pr = tg._weekly_predictions(lg, tgt, w_xg=0.8, half_life=480)
+    assert (pr["fitted_asof"] <= tgt.loc[pr.index, "date"]).all()
+
+
+def test_simulated_scores_match_results():
+    from app.simulate import _draw_scores
+    up = pd.read_parquet(DATA / "upcoming.parquet").head(40)
+    grids = np.stack(up["grid"].to_numpy())
+    rng = np.random.default_rng(0)
+    outcome = rng.integers(0, 3, (500, len(up))).astype(np.int8)
+    hg, ag = _draw_scores(grids, outcome, rng)
+    assert ((outcome == 0) == (hg > ag)).all()
+    assert ((outcome == 1) == (hg == ag)).all()
+    assert ((outcome == 2) == (hg < ag)).all()
+
+
+@pytest.mark.parametrize("league", list(LEAGUES))
+def test_simulated_goal_difference_balances(league):
+    table, rem, res = _league_sim(league, n=2000)
+    # Every goal scored is a goal conceded, so expected GD sums to ~0 (each team rounded to 1).
+    assert abs(res["summary"]["exp_gd"].sum()) <= len(table) / 2
+
+
+def test_fpl_agrees_with_official_projection():
+    fp = pd.read_parquet(DATA / "fpl_players.parquet")
+    assert fp[["xpts_next", "ep_next"]].corr().iloc[0, 1] >= 0.72

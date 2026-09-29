@@ -6,7 +6,7 @@ Serie A, Bundesliga, Ligue 1). Live at https://footyminds.streamlit.app.
 | Page | Question it answers | How |
 |---|---|---|
 | This week | What's happening this gameweek/matchday? | Fixture cards with win/draw/loss chances, per league |
-| Who wins? | Who's favourite, and why? | Logistic regression on Elo + rolling xG/shots/points form, pooled over ~18,000 games; "Why?" panel; public track record vs bookmakers |
+| Who wins? | Who's favourite, what's the score, and why? | Blend of a form model (Elo + rolling xG/shots/points, ~18,000 games) and a Dixon-Coles goals model; scorelines, both-teams-to-score, over 2.5, clean sheets; "Why?" panel; public track record vs bookmakers |
 | Where will they finish? | Title / Champions League / relegation odds | 10,000-season Monte Carlo with team-strength uncertainty and each league's rules (incl. Bundesliga/Ligue 1 play-offs); what-if mode |
 | What's he worth? | Bargain or pricey? | Blend of per-league Ridge + pooled XGBoost on log market value from on-pitch stats (never sees previous price); SHAP "Why?" panel |
 | Who plays like him? | Similar players anywhere in the top 5 | Per-90 profiles, cosine similarity within position, k-means playing styles |
@@ -34,7 +34,7 @@ macOS / Linux: same, but activate with `source .venv/bin/activate`.
 pipeline/config.py  league registry (LEAGUES): data-source codes, club counts, European/relegation places
 pipeline/sources/   Understat · football-data.co.uk · Transfermarkt snapshot · FPL API (all free)
 pipeline/clubs.py   learns club-name mappings from the data (same-day same-score matches; shared players)
-pipeline/*.py       build_fixtures → build_matches → build_players → train_match → train_value
+pipeline/*.py       build_fixtures → build_matches → build_players → train_match → train_goals → train_value
                     → build_scout → build_fpl        (orchestrated by run_all.py)
 data/*.parquet      small precomputed artifacts the app reads (data/build/ holds big intermediates, not committed)
 app/                Streamlit pages + shared UI; no training at runtime; app/clubs.csv holds club colours
@@ -51,16 +51,21 @@ app/                Streamlit pages + shared UI; no training at runtime; app/clu
 
 ## Model scores (2025/26 season as a test; see `data/*_metrics.json`)
 
-| League | Results called (model / bookmakers) | Player values: median error |
-|---|---|---|
-| Premier League | 48% / 49% | 27% |
-| La Liga | 52% / 55% | 41% |
-| Serie A | 53% / 54% | 32% |
-| Bundesliga | 54% / 55% | 31% |
-| Ligue 1 | 53% / 54% | 38% |
+| League | Results called (us / bookmakers) | Over/under 2.5 (us / bookmakers) | Exact score in our top 3 | Player values: median error |
+|---|---|---|---|---|
+| Premier League | 49% / 49% | 55% / 55% | 32% | 27% |
+| La Liga | 52% / 55% | 53% / 57% | 39% | 40% |
+| Serie A | 52% / 54% | 53% / 53% | 37% | 32% |
+| Bundesliga | 55% / 55% | 61% / 61% | 26% | 32% |
+| Ligue 1 | 53% / 54% | 56% / 63% | 30% | 39% |
 
-Match log-loss is within 0.011–0.021 of the bookmakers in every league. FPL expected points correlate 0.76
-with FPL's own projection.
+- **Results** are an average of the form model (Elo + rolling form, logistic regression) and the goals model;
+  the blend beat either alone in every league, and sits within 0.007–0.012 log-loss of the bookmakers.
+- **Scorelines** come from a Dixon-Coles-style goals model per league (weighted Poisson on 80% xG / 20% goals,
+  480-day half-life, scoring level calibrated to the last 200 real games, low-score correction). Predicted
+  goals per game are within 0.11 of the real 2025/26 averages in every league.
+- In low-scoring 2025/26 Serie A, neither we nor the bookmakers beat simply using last season's over-2.5 rate.
+- FPL expected points correlate 0.78 with FPL's own projection.
 
 ## Data caveats
 

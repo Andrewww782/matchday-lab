@@ -118,3 +118,18 @@ def test_cache_follows_data_refresh(tmp_path, monkeypatch):
     st = (tmp_path / "t.parquet").stat()
     os.utime(tmp_path / "t.parquet", ns=(st.st_atime_ns, st.st_mtime_ns + 10**9))
     assert list(data.table("t").columns) == ["a", "b"]
+
+
+def test_match_page_shows_the_score():
+    at = run("app/pages/match.py", home="Arsenal", away="Leeds")
+    assert not at.exception
+    assert any(s.value == "The score" for s in at.subheader)
+    assert any("Most likely score" in m.value for m in at.markdown)
+    assert {m.label for m in at.metric} >= {"Both teams score", "Over 2.5 goals"}
+
+
+@pytest.mark.parametrize("league", LEAGUE_NAMES)
+def test_home_cards_show_likely_score(league):
+    at = run("app/pages/home.py", league=league)
+    assert not at.exception
+    assert "Likely score" in " ".join(str(h.proto) for h in at.get("html"))

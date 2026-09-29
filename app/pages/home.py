@@ -31,7 +31,10 @@ for i, f in enumerate(week.itertuples()):
         st.html(f'<div class="ml-muted">{when} UK</div>'
                 f'<div style="display:flex;justify-content:space-between;margin:.2rem 0">'
                 f'{ui.badge(f.home)}<span class="ml-muted">vs</span>{ui.badge(f.away)}</div>'
-                + ui.prob_bar(f.home, f.away, f.p_h, f.p_d, f.p_a))
+                + ui.prob_bar(f.home, f.away, f.p_h, f.p_d, f.p_a)
+                + (f'<div class="ml-muted" style="margin-top:.35rem">Likely score '
+                   f'<b>{ui.parse_scores(f.top_scores)[0][0]}</b> · Over 2.5 goals {f.p_over25:.0%}</div>'
+                   if isinstance(getattr(f, "top_scores", None), str) else ""))
         st.page_link(PAGES["match"], label="Why?", icon=":material/help:",
                      query_params={"home": f.home, "away": f.away})
 

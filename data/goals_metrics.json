@@ -1,0 +1,203 @@
+{
+  "validation_season": 2025,
+  "params": {
+    "w_xg": 0.8,
+    "half_life": 480
+  },
+  "tuning": [
+    {
+      "w_xg": 0.0,
+      "half_life": 120,
+      "score_logloss": 2.954
+    },
+    {
+      "w_xg": 0.0,
+      "half_life": 240,
+      "score_logloss": 2.9272
+    },
+    {
+      "w_xg": 0.0,
+      "half_life": 480,
+      "score_logloss": 2.9202
+    },
+    {
+      "w_xg": 0.5,
+      "half_life": 120,
+      "score_logloss": 2.9207
+    },
+    {
+      "w_xg": 0.5,
+      "half_life": 240,
+      "score_logloss": 2.9088
+    },
+    {
+      "w_xg": 0.5,
+      "half_life": 480,
+      "score_logloss": 2.9068
+    },
+    {
+      "w_xg": 0.8,
+      "half_life": 120,
+      "score_logloss": 2.9137
+    },
+    {
+      "w_xg": 0.8,
+      "half_life": 240,
+      "score_logloss": 2.9055
+    },
+    {
+      "w_xg": 0.8,
+      "half_life": 480,
+      "score_logloss": 2.9046
+    }
+  ],
+  "by_league": {
+    "EPL": {
+      "n": 380,
+      "avg_goals_actual": 2.75,
+      "avg_goals_predicted": 2.753,
+      "score_logloss": 2.8682,
+      "score_logloss_baseline": 2.9628,
+      "top3_hit": 0.324,
+      "over25_logloss": 0.6892,
+      "over25_logloss_bookmaker": 0.6887,
+      "over25_logloss_base_rate": 0.6947,
+      "over25_accuracy": 0.547,
+      "over25_accuracy_bookmaker": 0.55,
+      "btts_accuracy": 0.55,
+      "btts_base_rate_accuracy": 0.561,
+      "wdl_logloss_match_model": 1.0395,
+      "wdl_logloss_goals_model": 1.0205,
+      "wdl_logloss_blend": 1.0254,
+      "wdl_accuracy_match_model": 0.4816,
+      "wdl_accuracy_blend": 0.4868,
+      "rho": -0.0331,
+      "wdl_logloss_bookmaker": 1.0185,
+      "wdl_accuracy_bookmaker": 0.4895
+    },
+    "La_Liga": {
+      "n": 380,
+      "avg_goals_actual": 2.695,
+      "avg_goals_predicted": 2.656,
+      "score_logloss": 2.7829,
+      "score_logloss_baseline": 2.8675,
+      "top3_hit": 0.387,
+      "over25_logloss": 0.6842,
+      "over25_logloss_bookmaker": 0.6767,
+      "over25_logloss_base_rate": 0.6945,
+      "over25_accuracy": 0.534,
+      "over25_accuracy_bookmaker": 0.571,
+      "btts_accuracy": 0.516,
+      "btts_base_rate_accuracy": 0.566,
+      "wdl_logloss_match_model": 0.9778,
+      "wdl_logloss_goals_model": 0.9798,
+      "wdl_logloss_blend": 0.9741,
+      "wdl_accuracy_match_model": 0.5211,
+      "wdl_accuracy_blend": 0.5211,
+      "rho": 0.0047,
+      "wdl_logloss_bookmaker": 0.9637,
+      "wdl_accuracy_bookmaker": 0.55
+    },
+    "Serie_A": {
+      "n": 380,
+      "avg_goals_actual": 2.426,
+      "avg_goals_predicted": 2.414,
+      "score_logloss": 2.7683,
+      "score_logloss_baseline": 2.8758,
+      "top3_hit": 0.371,
+      "over25_logloss": 0.7051,
+      "over25_logloss_bookmaker": 0.6981,
+      "over25_logloss_base_rate": 0.6913,
+      "over25_accuracy": 0.529,
+      "over25_accuracy_bookmaker": 0.532,
+      "btts_accuracy": 0.539,
+      "btts_base_rate_accuracy": 0.547,
+      "wdl_logloss_match_model": 0.9972,
+      "wdl_logloss_goals_model": 0.9986,
+      "wdl_logloss_blend": 0.9945,
+      "wdl_accuracy_match_model": 0.5289,
+      "wdl_accuracy_blend": 0.5211,
+      "rho": -0.0508,
+      "wdl_logloss_bookmaker": 0.9821,
+      "wdl_accuracy_bookmaker": 0.5395
+    },
+    "Bundesliga": {
+      "n": 306,
+      "avg_goals_actual": 3.235,
+      "avg_goals_predicted": 3.125,
+      "score_logloss": 3.0572,
+      "score_logloss_baseline": 3.2186,
+      "top3_hit": 0.265,
+      "over25_logloss": 0.6495,
+      "over25_logloss_bookmaker": 0.6395,
+      "over25_logloss_base_rate": 0.6568,
+      "over25_accuracy": 0.614,
+      "over25_accuracy_bookmaker": 0.614,
+      "btts_accuracy": 0.608,
+      "btts_base_rate_accuracy": 0.618,
+      "wdl_logloss_match_model": 0.9628,
+      "wdl_logloss_goals_model": 0.9688,
+      "wdl_logloss_blend": 0.9624,
+      "wdl_accuracy_match_model": 0.5425,
+      "wdl_accuracy_blend": 0.549,
+      "rho": -0.1047,
+      "wdl_logloss_bookmaker": 0.9514,
+      "wdl_accuracy_bookmaker": 0.549
+    },
+    "Ligue_1": {
+      "n": 306,
+      "avg_goals_actual": 2.82,
+      "avg_goals_predicted": 2.874,
+      "score_logloss": 3.0462,
+      "score_logloss_baseline": 3.1227,
+      "top3_hit": 0.301,
+      "over25_logloss": 0.6863,
+      "over25_logloss_bookmaker": 0.6719,
+      "over25_logloss_base_rate": 0.6929,
+      "over25_accuracy": 0.559,
+      "over25_accuracy_bookmaker": 0.627,
+      "btts_accuracy": 0.526,
+      "btts_base_rate_accuracy": 0.507,
+      "wdl_logloss_match_model": 0.9865,
+      "wdl_logloss_goals_model": 0.9904,
+      "wdl_logloss_blend": 0.9845,
+      "wdl_accuracy_match_model": 0.5294,
+      "wdl_accuracy_blend": 0.5294,
+      "rho": -0.006,
+      "wdl_logloss_bookmaker": 0.9729,
+      "wdl_accuracy_bookmaker": 0.5425
+    }
+  },
+  "current_season": {
+    "Bundesliga": {
+      "n": 36,
+      "top3_hit": 0.111,
+      "over25_accuracy": 0.75,
+      "over25_accuracy_bookmaker": 0.778
+    },
+    "EPL": {
+      "n": 50,
+      "top3_hit": 0.32,
+      "over25_accuracy": 0.6,
+      "over25_accuracy_bookmaker": 0.64
+    },
+    "La_Liga": {
+      "n": 69,
+      "top3_hit": 0.362,
+      "over25_accuracy": 0.652,
+      "over25_accuracy_bookmaker": 0.71
+    },
+    "Ligue_1": {
+      "n": 45,
+      "top3_hit": 0.289,
+      "over25_accuracy": 0.511,
+      "over25_accuracy_bookmaker": 0.578
+    },
+    "Serie_A": {
+      "n": 50,
+      "top3_hit": 0.46,
+      "over25_accuracy": 0.58,
+      "over25_accuracy_bookmaker": 0.54
+    }
+  }
+}

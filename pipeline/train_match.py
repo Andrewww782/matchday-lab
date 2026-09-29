@@ -15,7 +15,7 @@ from sklearn.preprocessing import StandardScaler
 from xgboost import XGBClassifier
 
 from pipeline import build_matches as bm
-from pipeline.config import CURRENT_SEASON, DATA, LEAGUES, MODELS
+from pipeline.config import BUILD, CURRENT_SEASON, DATA, LEAGUES, MODELS
 
 CLASSES = ["H", "D", "A"]
 FORM = bm.form_columns()
@@ -154,6 +154,9 @@ def main():
     best = min(_models(), key=lambda k: report[k]["log_loss"])
     report["chosen"] = best
     report["by_league"] = _report(va, preds[best])
+    # Kept for the goals model's backtest (same games, same out-of-sample predictions).
+    va.assign(p_h=preds[best][:, 0], p_d=preds[best][:, 1], p_a=preds[best][:, 2])[
+        ["league", "date", "home", "away", "p_h", "p_d", "p_a"]].to_parquet(BUILD / "match_val_preds.parquet")
     print(json.dumps({k: v for k, v in report.items() if k != "by_league"}, indent=2))
     for lg, r in report["by_league"].items():
         print(f"  {lg:10} model {r['model']['log_loss']:.4f} / {r['model']['accuracy']:.1%}   "
@@ -176,7 +179,7 @@ def main():
         cur["bookie_pick"] = np.where(np.isnan(b).any(axis=1), None,
                                       np.array(CLASSES)[np.nan_to_num(b).argmax(1)])
         cur[["league", "date", "home", "away", "home_goals", "away_goals", "result", "p_h", "p_d", "p_a",
-             "b_h", "b_d", "b_a", "pick", "bookie_pick"]].to_parquet(DATA / "track_record.parquet", index=False)
+             "b_h", "b_d", "b_a", "pick", "bookie_pick"]].to_parquet(BUILD / "track_record_form.parquet", index=False)
         report["current_season"] = _report(cur, p)
 
     # Every pairing of clubs in each league, from today's form (feeds the picker + simulator).
@@ -194,7 +197,7 @@ def main():
     Xp = make_features(pairs, fill)
     pairs[["p_h", "p_d", "p_a"]] = model.predict_proba(Xp)
     pairs = pd.concat([pairs[["league", "home", "away", "p_h", "p_d", "p_a"]], explain(model, Xp)], axis=1)
-    pairs.to_parquet(DATA / "pair_probs.parquet", index=False)
+    pairs.to_parquet(BUILD / "pair_probs_form.parquet", index=False)
 
     # Upcoming fixtures, with rest = days since each club's previous scheduled league game
     # (same definition as in training).
@@ -215,7 +218,9 @@ def main():
     upc[["p_h", "p_d", "p_a"]] = model.predict_proba(Xu)
     upc = pd.concat([upc[["league", "fixture_id", "gw", "kickoff", "home", "away", "p_h", "p_d", "p_a"]],
                      explain(model, Xu)], axis=1)
-    upc.to_parquet(DATA / "upcoming.parquet", index=False)
+    upc.to_parquet(BUILD / "upcoming_form.parquet", index=False)
+    # The form model's outputs go to data/build/; train_goals blends in the goals model and
+    # writes the final upcoming / pair_probs / track_record that the app reads.
 
     (DATA / "match_metrics.json").write_text(json.dumps(report, indent=2))
     print(f"chosen: {best} | pairs: {len(pairs)} | upcoming fixtures: {len(upc)}")

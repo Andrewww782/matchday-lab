@@ -10,6 +10,15 @@ from pipeline.config import CURRENT_SEASON
 from pipeline.http import get_bytes
 
 
+def _first(df: pd.DataFrame, cols: list[str]) -> pd.Series:
+    """Row-wise first non-missing value across candidate columns (bookmakers vary by season)."""
+    out = pd.Series(float("nan"), index=df.index)
+    for c in cols:
+        if c in df:
+            out = out.fillna(pd.to_numeric(df[c], errors="coerce"))
+    return out
+
+
 def season(start_year: int, code: str = "E0") -> pd.DataFrame:
     yy = f"{str(start_year)[-2:]}{str(start_year + 1)[-2:]}"
     age = 12 if start_year >= CURRENT_SEASON else float("inf")
@@ -30,6 +39,9 @@ def season(start_year: int, code: str = "E0") -> pd.DataFrame:
         "odds_h": df.get("B365H"),
         "odds_d": df.get("B365D"),
         "odds_a": df.get("B365A"),
+        # Over/under 2.5 goals: Bet365 where available, else the market average (older seasons).
+        "odds_o25": _first(df, ["B365>2.5", "Avg>2.5", "BbAv>2.5"]),
+        "odds_u25": _first(df, ["B365<2.5", "Avg<2.5", "BbAv<2.5"]),
     })
     out["season"] = start_year
     return out.reset_index(drop=True)

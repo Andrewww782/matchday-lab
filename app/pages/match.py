@@ -15,7 +15,9 @@ league = ui.league_picker()
 pairs = data.table("pair_probs").query("league == @league")
 up = data.table("upcoming").query("league == @league")
 nxt = up.sort_values("kickoff").iloc[0] if len(up) else pairs.iloc[0]
-GROUPS = [c for c in pairs.columns if c not in ("league", "home", "away", "p_h", "p_d", "p_a")]
+NOT_FACTORS = {"league", "home", "away", "p_h", "p_d", "p_a", "fixture_id", "gw", "kickoff",
+               "xg_h", "xg_a", "p_btts", "p_over25", "p_cs_h", "p_cs_a", "top_scores", "grid"}
+GROUPS = [c for c in pairs.columns if c not in NOT_FACTORS]
 round_name = "Gameweek" if league == "EPL" else "Matchday"
 
 c1, c2 = st.columns(2)
@@ -49,6 +51,36 @@ with st.container(border=True):
             + ui.prob_bar(home, away, row["p_h"], row["p_d"], row["p_a"], big=True))
     st.markdown(f"**Most likely: {headline} ({p[pick]:.0%})** · {confidence}")
 
+if "top_scores" in row and pd.notna(row.get("top_scores")):
+    st.subheader("The score")
+    scores = ui.parse_scores(row["top_scores"])
+    best, best_p = scores[0]
+    st.markdown(f"Expected goals: **{home} {row['xg_h']:.1f} – {row['xg_a']:.1f} {away}**. "
+                f"Most likely score **{best}** ({best_p:.0%}), but football is random: no single score is "
+                "likely, so here are the top five.")
+    st.html(ui.score_chips(row["top_scores"]))
+    h_goals, a_goals = (int(x) for x in best.split("–"))
+    best_is_draw = h_goals == a_goals
+    if best_is_draw and pick != "D":
+        st.caption(f"Why a draw, if {headline} is more likely? A win can happen many ways (1–0, 2–0, 2–1…), "
+                   f"so each of those scores is less likely on its own than {best}, even though together "
+                   "they add up to more.")
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Both teams score", f"{row['p_btts']:.0%}")
+    m2.metric("Over 2.5 goals", f"{row['p_over25']:.0%}", help="3 or more goals in the game.")
+    m3.metric(f"{home} clean sheet", f"{row['p_cs_h']:.0%}")
+    m4.metric(f"{away} clean sheet", f"{row['p_cs_a']:.0%}")
+    with st.expander("All scorelines"):
+        import plotly.express as px
+        n = int(round(len(row["grid"]) ** 0.5))
+        g = np.array(row["grid"]).reshape(n, n)[:6, :6] * 100
+        fig = px.imshow(g, x=[str(i) for i in range(6)], y=[str(i) for i in range(6)], text_auto=".0f",
+                        color_continuous_scale="Greens", labels=dict(x=f"{away} goals", y=f"{home} goals"))
+        fig.update_traces(hovertemplate=f"{home} %{{y}} – %{{x}} {away}: %{{z:.1f}}%<extra></extra>")
+        fig.update_layout(height=380, margin=dict(l=0, r=0, t=10, b=0), coloraxis_showscale=False)
+        st.plotly_chart(fig, width="stretch")
+        st.caption("Chance of each exact score, in %. Scores above 5 goals are left out (they're rare).")
+
 st.subheader("Why?")
 items = sorted([(g, float(row[g])) for g in GROUPS if abs(row[g]) >= 0.5], key=lambda x: -abs(x[1]))
 if not items:
@@ -71,9 +103,13 @@ We compare the two clubs on:
 - **Recent form** over the last 5 and 10 league games: chances created and conceded (expected
   goals, *xG*), goals, shots and points.
 - **Rest**: days since each side's last league game.
+- **Attack & defence strength**: a goals model that learns how many goals each club tends to
+  score and concede (from real goals and expected goals, recent games counting more).
 
-A statistical model trained on every game in Europe's top five leagues since 2016 (about 18,000)
-turns those into win, draw and loss chances. It only learns from past seasons, so this season's predictions are a genuine test.
+The final chances are an average of two models trained on every game in Europe's top five leagues
+since 2016 (about 18,000): a form model and the goals model. Together they beat either one alone.
+The goals model also gives the scorelines. Both only learn from games before the ones they predict,
+so this season's predictions are a genuine test.
 """)
 
 st.divider()
@@ -93,7 +129,15 @@ k1, k2, k3 = st.columns(3)
 k1.metric("Results called correctly", f"{acc:.0%}", help="The most likely outcome was what happened.")
 k2.metric("Bookmakers (same games)", f"{bacc:.0%}")
 k3.metric("Games so far", len(tr))
-v = m.get("by_league", {}).get(league)
+if "top3_hit" in tr:
+    over = (tr["home_goals"] + tr["away_goals"]) >= 3
+    ok = tr["bookie_over25"].notna()
+    k4, k5, k6 = st.columns(3)
+    k4.metric("Exact score in our top 3", f"{tr['top3_hit'].mean():.0%}",
+              help="Exact scores are hard: about 30% is good.")
+    k5.metric("Over/under 2.5 called", f"{((tr['p_over25'] > 0.5) == over).mean():.0%}")
+    k6.metric("Bookmakers, over/under", f"{((tr.loc[ok, 'bookie_over25'] > 0.5) == over[ok]).mean():.0%}")
+v = m.get("headline", m).get("by_league", {}).get(league)
 if v:
     st.caption(f"Last season as a test: in the {data.league_name(league)} our model called "
                f"{v['model']['accuracy']:.0%} of results correctly vs {v['bookmaker']['accuracy']:.0%} "
@@ -105,4 +149,8 @@ show["Match"] = show["home"] + " " + show["home_goals"].astype(str) + "–" + sh
 show["We said"] = show["pick"].map(names) + " (" + (show[["p_h", "p_d", "p_a"]].max(axis=1) * 100).round().astype(int).astype(str) + "%)"
 show["Right?"] = np.where(show["pick"] == show["result"], "✅", "❌")
 show["Date"] = pd.to_datetime(show["date"]).dt.strftime("%d %b")
-st.dataframe(show[["Date", "Match", "We said", "Right?"]], hide_index=True, width="stretch")
+cols = ["Date", "Match", "We said", "Right?"]
+if "likely_score" in show:
+    show["Likely score"] = show["likely_score"].str.replace("-", "–")
+    cols.insert(3, "Likely score")
+st.dataframe(show[cols], hide_index=True, width="stretch")

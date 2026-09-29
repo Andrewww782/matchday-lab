@@ -9,7 +9,7 @@ import time
 import pandas as pd
 
 from pipeline import (build_fixtures, build_fpl, build_matches, build_players, build_scout,
-                      http, train_match, train_value)
+                      http, train_goals, train_match, train_value)
 from pipeline.config import CURRENT_SEASON, DATA, LEAGUES, season_label
 from pipeline.sources import fpl
 
@@ -18,6 +18,7 @@ STEPS = [
     ("matches", build_matches.main),
     ("players", build_players.main),
     ("match model", train_match.main),
+    ("goals model", train_goals.main),
     ("value model", train_value.main),
     ("scouting", build_scout.main),
     ("fpl", build_fpl.main),

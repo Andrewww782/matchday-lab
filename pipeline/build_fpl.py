@@ -19,16 +19,12 @@ COMPONENTS = ["appearance", "goals", "assists", "clean_sheet", "conceded", "save
               "defensive", "bonus", "cards"]
 
 
-def fixture_goals(up: pd.DataFrame, state: pd.DataFrame) -> pd.DataFrame:
-    """Expected goals for each side of each upcoming fixture (attack x defence x venue)."""
-    s = state.set_index("team")
-    lg_for = s["xgf_10"].mean()
-    home_adv = 1.12
-    att = s["xgf_10"] / lg_for
-    dfn = s["xga_10"] / lg_for
+def fixture_goals(up: pd.DataFrame) -> pd.DataFrame:
+    """Expected goals and clean-sheet chances for each side, from the goals model (train_goals),
+    so Fantasy agrees with the scorelines on the match page."""
     up = up.copy()
-    up["lam_h"] = lg_for * home_adv * up.home.map(att) * up.away.map(dfn)
-    up["lam_a"] = lg_for / home_adv * up.away.map(att) * up.home.map(dfn)
+    up["lam_h"], up["lam_a"] = up["xg_h"], up["xg_a"]
+    up["cs_h"], up["cs_a"] = up["p_cs_h"], up["p_cs_a"]
     return up
 
 
@@ -65,8 +61,8 @@ def expected_points(p: pd.DataFrame, up: pd.DataFrame, scoring: dict) -> pd.Data
     rates = player_rates(p)
     rows = []
     for f in up.itertuples():
-        for side, team, opp, lam_for, lam_against in (
-                ("H", f.home, f.away, f.lam_h, f.lam_a), ("A", f.away, f.home, f.lam_a, f.lam_h)):
+        for side, team, opp, lam_for, lam_against, clean_sheet in (
+                ("H", f.home, f.away, f.lam_h, f.lam_a, f.cs_h), ("A", f.away, f.home, f.lam_a, f.lam_h, f.cs_a)):
             idx = p.index[p.team == team]
             if not len(idx):
                 continue
@@ -79,7 +75,7 @@ def expected_points(p: pd.DataFrame, up: pd.DataFrame, scoring: dict) -> pd.Data
             pens = np.where(q["penalties_order"] == 1, PEN_PER_GAME * PEN_CONVERT * atk, 0) * share
             goals = (r["npxg90"] * atk * share + pens) * k.map(scoring["goals_scored"])
             assists = r["xa90"] * atk * share * scoring["assists"]
-            cs_p = np.exp(-lam_against)
+            cs_p = clean_sheet
             clean = cs_p * p60 * k.map(scoring["clean_sheets"])
             conceded = -(lam_against / 2 - 0.25 * (1 - np.exp(-2 * lam_against))) * p60 * \
                 -k.map(scoring["goals_conceded"])
@@ -111,7 +107,7 @@ def main():
     up = pd.read_parquet(DATA / "upcoming.parquet").query("league == 'EPL'")
     next_gw = int(up.gw.min())
     up = up[up.gw < next_gw + HORIZON]
-    up = fixture_goals(up, pd.read_parquet(DATA / "team_state.parquet").query("league == 'EPL'"))
+    up = fixture_goals(up)
     xp = expected_points(p, up, scoring)
     xp.to_parquet(DATA / "fpl_xpts.parquet", index=False)
 
