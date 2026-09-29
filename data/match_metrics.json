@@ -21,8 +21,8 @@
     "n": 380
   },
   "xgboost": {
-    "log_loss": 1.0511,
-    "accuracy": 0.4711,
+    "log_loss": 1.0513,
+    "accuracy": 0.4632,
     "n": 380
   },
   "chosen": "logistic",

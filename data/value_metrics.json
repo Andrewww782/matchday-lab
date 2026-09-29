@@ -8,9 +8,9 @@
     "n": 391
   },
   "xgboost": {
-    "mae_eur_m": 9.62,
-    "median_pct_error": 28.2,
-    "within_50pct": 77.5,
+    "mae_eur_m": 9.63,
+    "median_pct_error": 28.7,
+    "within_50pct": 78.3,
     "n": 391
   },
   "chosen": "ridge",
