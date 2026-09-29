@@ -1,0 +1,20 @@
+{
+  "validation_season": 2025,
+  "train_rows": 1185,
+  "ridge": {
+    "mae_eur_m": 9.33,
+    "median_pct_error": 26.7,
+    "within_50pct": 80.1,
+    "n": 391
+  },
+  "xgboost": {
+    "mae_eur_m": 9.62,
+    "median_pct_error": 28.2,
+    "within_50pct": 77.5,
+    "n": 391
+  },
+  "chosen": "ridge",
+  "market_calibration": 1.198,
+  "snapshot_date": "2026-06-12",
+  "estimated_players": 334
+}
