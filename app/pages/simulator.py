@@ -48,7 +48,7 @@ with st.expander("What if…? Lock in some results", expanded=bool(locked)):
 
 
 @st.cache_data(ttl=3600, max_entries=128)
-def run(league: str, locked_items: tuple) -> dict:
+def run(league: str, locked_items: tuple, v: int) -> dict:  # v: data version, so refreshes aren't cached over
     fx = data.table("fixtures").query("league == @league")
     table = current_table(fx, data.teams(league))
     rem = data.table("upcoming").query("league == @league").set_index("fixture_id")
@@ -57,7 +57,7 @@ def run(league: str, locked_items: tuple) -> dict:
                     playoff=r["playoff"])
 
 
-res = run(league, tuple(sorted(locked.items())))
+res = run(league, tuple(sorted(locked.items())), data.version())
 s = res["summary"].join(table[["Pts", "P"]])
 
 st.subheader("Chances by the end of the season")

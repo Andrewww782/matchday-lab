@@ -103,3 +103,18 @@ def test_compare_mixed_leagues():
     assert not at.exception
     assert len(at.multiselect(key="players").value) == 2
     assert any("different leagues" in c.value for c in at.caption)
+
+
+def test_cache_follows_data_refresh(tmp_path, monkeypatch):
+    """A running server must not serve last week's cached tables after new data lands
+    (this crashed the live site once: new code, old cached players table)."""
+    import os
+    import pandas as pd
+    from app import data
+    monkeypatch.setattr(data, "DATA", tmp_path)
+    pd.DataFrame({"a": [1]}).to_parquet(tmp_path / "t.parquet")
+    assert list(data.table("t").columns) == ["a"]
+    pd.DataFrame({"a": [1], "b": [2]}).to_parquet(tmp_path / "t.parquet")
+    st = (tmp_path / "t.parquet").stat()
+    os.utime(tmp_path / "t.parquet", ns=(st.st_atime_ns, st.st_mtime_ns + 10**9))
+    assert list(data.table("t").columns) == ["a", "b"]
