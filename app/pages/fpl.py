@@ -56,10 +56,10 @@ if entry.strip():
             xi = mine[mine["Starting"]].sort_values("xpts_next", ascending=False)
             cap, vice = xi.iloc[0], xi.iloc[1]
             c1, c2, c3 = st.columns(3)
-            c1.metric("Captain pick", cap["web_name"], f"{cap['xpts_next']:.1f} expected pts", delta_color="off")
-            c2.metric("Vice-captain", vice["web_name"], f"{vice['xpts_next']:.1f} expected pts", delta_color="off")
+            c1.metric("Captain pick", cap["web_name"], f"{cap['xpts_next']:.1f} expected pts", delta_color="off", delta_arrow="off")
+            c2.metric("Vice-captain", vice["web_name"], f"{vice['xpts_next']:.1f} expected pts", delta_color="off", delta_arrow="off")
             c3.metric(f"Your XI in GW{gw}", f"{xi['xpts_next'].sum() + cap['xpts_next']:.0f} pts",
-                      "including the captain's double", delta_color="off")
+                      "including the captain's double", delta_color="off", delta_arrow="off")
 
             # Best single transfers: same position, affordable, respecting the 3-per-club rule.
             owned = set(mine["fpl_id"])
@@ -86,8 +86,9 @@ if entry.strip():
             st.markdown(f"**Best transfers** (extra expected points over the next {horizon} gameweeks, "
                         f"with £{sq['bank']:.1f}m in the bank)")
             if len(ideas):
+                ideas["Cost"] = ideas["Cost"].map(lambda c: "Same price" if abs(c) < 0.05 else f"{'-' if c < 0 else '+'}£{abs(c):.1f}m")
                 st.dataframe(ideas, hide_index=True, width="stretch", column_config={
-                    "Cost": st.column_config.NumberColumn("Price change", format="£%+.1fm"),
+                    "Cost": st.column_config.TextColumn("Price change"),
                     "Gain": st.column_config.NumberColumn("Extra pts", format="+%.1f")})
                 st.caption("Uses current prices: your selling price can be a little lower.")
             else:
