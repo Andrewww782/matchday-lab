@@ -1,5 +1,7 @@
 # FootyMinds redesign plan ("Matchday Dark"), parked until the feature roadmap is done
 
+**Groundwork already in place (colour & motion pass):** `app/theme.py` (league palettes, fixed meanings, chart helpers), the self-hosted Barlow Condensed heading font, the stylesheet + motion script in `app/ui.py` / `app/motion.js`. Build on these rather than starting over.
+
 **Direction chosen:** "Matchday Dark", with a top bar replacing the sidebar: Home · Matches (Predictions · Season odds · Track record) · Players (Value · Similar · Compare) · Fantasy (Top picks · My team · Fixtures). About goes in the footer. Old URLs keep working.
 
 **Principles:**

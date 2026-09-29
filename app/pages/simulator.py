@@ -2,7 +2,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from app import data, ui
+from app import data, theme, ui
 from app.simulate import current_table, simulate
 
 st.title("Where will they finish?")
@@ -16,6 +16,7 @@ if not data.available("fixtures", "upcoming"):
 league = ui.league_picker()
 rules = data.leagues()[league]
 round_name = "Gameweek" if league == "EPL" else "Matchday"
+st.html(ui.banner(data.league_name(league), "10,000 seasons played out"))
 fx = data.table("fixtures").query("league == @league")
 table = current_table(fx, data.teams(league))
 remaining = data.table("upcoming").query("league == @league").set_index("fixture_id")
@@ -82,7 +83,7 @@ st.dataframe(show, hide_index=True, width="stretch", height=38 + 35 * len(show),
 st.subheader("Where each club could finish")
 pos = res["positions"].loc[s.index]
 fig = px.imshow(pos.to_numpy(), x=[str(c) for c in pos.columns], y=pos.index.tolist(),
-                color_continuous_scale="Greens", aspect="auto", zmin=0, zmax=float(pos.to_numpy().max()),
+                color_continuous_scale=theme.league_scale(league), aspect="auto", zmin=0, zmax=float(pos.to_numpy().max()),
                 labels=dict(x="Finishing position", y="", color="Chance"))
 fig.update_traces(hovertemplate="%{y}: %{z:.0%} chance of finishing %{x}<extra></extra>")
 fig.update_layout(height=30 * len(pos) + 20, margin=dict(l=0, r=0, t=10, b=0), coloraxis_showscale=False)

@@ -35,11 +35,12 @@ cols = full_stats[me["pos"]] if full else att_stats[me["pos"]]
 pct = "pct_" if full else "pct_eu_"
 where = "Premier League" if full else "top-5-league"
 
-with st.container(border=True):
-    st.html(f'<div style="font-size:1.3rem;font-weight:700">{me["name"]}</div>'
+with st.container(border=True, key="fmcard_player"):
+    st.html(ui.club_stripe(me["team"])
+            + f'<div style="font-size:1.3rem;font-weight:700">{me["name"]}</div>'
             f'<div class="ml-muted">{ui.badge(me["team"])} · {me["league_name"]} · {me["pos"]} · '
             f'age {me["age"]:.0f}</div>'
-            f'<div style="margin-top:.5rem">Playing style: {ui.pill(me["style"], "#0E8A5F")}</div>')
+            f'<div style="margin-top:.5rem">Playing style: {ui.pill(me["style"], ui.HOME)}</div>')
     strengths = sorted(((me[f"{pct}{c}"], labels[c]) for c in cols if pd.notna(me.get(f"{pct}{c}"))),
                        reverse=True)[:3]
     if strengths:
@@ -87,12 +88,12 @@ st.subheader(f"Most similar to {me['web_name']}")
 if res.empty:
     st.info("No one matches those filters. Try loosening them.")
 for c, r in res.iterrows():
-    with st.container(border=True):
+    with st.container(border=True, key=f"fmcard_sim{c}"):
         a, b, d = st.columns([5, 2, 2], vertical_alignment="center")
         age = f"age {r['age']:.0f} · " if pd.notna(r["age"]) else ""
         a.html(f'<b>{r["name"]}</b><br><span class="ml-muted">{ui.badge(r["team"])} · {r["league_name"]} · '
                f'{r["pos"]} · {age}{r["style"]} · {ui.money(r["tm_value"])}</span>')
-        b.metric("Similarity", f"{r['similarity']:.0f}%", label_visibility="collapsed")
+        b.html(ui.ring(r["similarity"], f"{r['similarity']:.0f}% similar"))
         d.page_link(PAGES["compare"], label="Compare", icon=":material/compare_arrows:",
                     query_params={"players": [data.player_label(pid), data.player_label(c)]})
 

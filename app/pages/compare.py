@@ -44,7 +44,7 @@ if not full:
                "(defensive stats are only available for the Premier League). Percentiles are against "
                "players in the same position across all five leagues.")
 
-COLOURS = ["#0E8A5F", "#3F6FD8", "#D97706"]
+COLOURS = [ui.HOME, ui.AWAY, "#D97706"]
 fig = go.Figure()
 theta = [labels[s] for s in stats]
 for (c, r), colour in zip(rows.iterrows(), COLOURS):

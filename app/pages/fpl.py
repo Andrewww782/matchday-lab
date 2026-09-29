@@ -2,7 +2,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-from app import data, ui
+from app import data, theme, ui
 from app.fpl_live import FplError, squad
 
 st.title("Fantasy picks")
@@ -146,7 +146,7 @@ with tabs[3]:
         st.markdown(f"**{rows['xpts'].sum():.1f} expected points over the next {horizon} gameweeks.** "
                     f"Expected minutes per game: {rows['exp_min'].mean():.0f}.")
         fig = go.Figure(go.Bar(x=comp.values, y=comp.index, orientation="h",
-                               marker_color=["#0E8A5F" if v > 0 else "#C2410C" for v in comp.values],
+                               marker_color=[theme.GOOD if v > 0 else theme.BAD for v in comp.values],
                                hovertemplate="%{y}: %{x:.1f} pts<extra></extra>"))
         fig.update_layout(height=320, margin=dict(l=0, r=0, t=10, b=0), xaxis_title="Expected points")
         st.plotly_chart(fig, width="stretch")

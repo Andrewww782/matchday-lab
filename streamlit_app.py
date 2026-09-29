@@ -1,4 +1,4 @@
-"""FootyMinds - Premier League predictions, player values and scouting for fans."""
+"""FootyMinds - top-5-league predictions, player values and scouting for fans."""
 import pandas as pd
 import streamlit as st
 
@@ -6,6 +6,8 @@ from app import data, ui
 
 st.set_page_config(page_title="FootyMinds", page_icon="⚽", layout="wide")
 ui.inject_css()
+# Pages without a league picker keep the colours of the league last picked.
+ui.set_league_accent(st.session_state.get("league"))
 
 PAGES = {
     "home": st.Page("app/pages/home.py", title="This week", icon=":material/home:", default=True),
@@ -28,7 +30,7 @@ nav = st.navigation({
 })
 
 with st.sidebar:
-    st.markdown("### ⚽ FootyMinds")
+    st.html('<div class="fm-wordmark"><span class="ball">⚽</span><span>FOOTY<b>MINDS</b></span></div>')
     if data.available("players"):
         idx = data.player_index()
         labels = idx.set_index("pid")["label"].to_dict()
@@ -46,5 +48,6 @@ with st.sidebar:
         when = pd.Timestamp(m["updated_at"]).strftime("%d %b %Y")
         st.caption(f"{m['season']} · Premier League, La Liga, Serie A, Bundesliga, Ligue 1 · updated {when}")
     st.caption("Not affiliated with any league, club or FPL. Just for fun, not betting advice.")
+    ui.inject_motion()
 
 nav.run()

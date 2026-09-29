@@ -133,3 +133,45 @@ def test_home_cards_show_likely_score(league):
     at = run("app/pages/home.py", league=league)
     assert not at.exception
     assert "Likely score" in " ".join(str(h.proto) for h in at.get("html"))
+
+
+# --- Colour & motion ---------------------------------------------------------------------------
+
+def test_stylesheet_survives_streamlits_sanitiser():
+    """Streamlit drops a <style> block whose text contains '<' followed by a letter or '/'."""
+    import re
+    from app import ui
+    body = ui.CSS.strip().removeprefix("<style>").removesuffix("</style>")
+    assert not re.search(r"<[/\w!]", body)
+    assert "prefers-reduced-motion: reduce" in body
+
+
+@pytest.mark.parametrize("league", ["EPL", "La_Liga", "Serie_A", "Bundesliga", "Ligue_1", None])
+def test_league_palettes_are_readable(league):
+    from app import theme
+    t = theme.league(league)
+    for c in ("a", "b"):  # banner and selected-tab text is white on these
+        assert theme.contrast("#FFFFFF", t[c]) >= 4.5, (league, c)
+
+
+def test_league_accent_follows_the_picked_league():
+    at = run("app/pages/home.py", league="Bundesliga")
+    assert not at.exception
+    html = " ".join(str(h.proto) for h in at.get("html"))
+    assert "--lg-a:#7A0A10" in html and "BUNDESLIGA".lower() in html.lower()
+
+
+def test_animated_pieces_keep_their_numbers_as_text():
+    from app import ui
+    bar = ui.prob_bar("Arsenal", "Leeds", 0.62, 0.22, 0.16)
+    assert all(s in bar for s in ("62%", "Draw", "16%")) and "data-count" in bar
+    chips = ui.score_chips("1-0:0.14|2-0:0.13|1-1:0.11")
+    assert "1–0 · 14%" in chips and chips.count("ml-chip") == 3 and chips.count(" best") == 1
+    ring = ui.ring(87.4, "87% similar")
+    assert "--fm-p:87.4" in ring and "87%" in ring and 'aria-label="87% similar"' in ring
+
+
+def test_scout_shows_similarity_rings():
+    at = run("app/pages/scout.py", player="Bukayo Saka · Arsenal")
+    assert not at.exception
+    assert "fm-ring" in " ".join(str(h.proto) for h in at.get("html"))

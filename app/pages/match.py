@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-from app import data, ui
+from app import data, theme, ui
 
 st.title("Who wins?")
 st.markdown("Pick two clubs to see each side's chances, and what's driving the prediction.")
@@ -35,8 +35,9 @@ row = fixture.iloc[0] if len(fixture) else pairs[(pairs.home == home) & (pairs.a
 
 if len(fixture):
     when = pd.Timestamp(row["kickoff"]).tz_convert("Europe/London").strftime("%A %d %B, %H:%M")
-    st.caption(f"{round_name} {int(row['gw'])} · {when} (UK time)")
+    st.html(ui.banner(data.league_name(league), f"{round_name} {int(row['gw'])} · {when} UK"))
 else:
+    st.html(ui.banner(data.league_name(league), "Any two clubs"))
     st.caption("Not a scheduled fixture yet, so this assumes a normal week's rest for both teams.")
 
 p = {"H": row["p_h"], "D": row["p_d"], "A": row["p_a"]}
@@ -45,8 +46,9 @@ headline = {"H": f"{home} win", "D": "a draw", "A": f"{away} win"}[pick]
 confidence = "Too close to call" if max(p.values()) < 0.4 else \
     "Slight favourite" if max(p.values()) < 0.5 else "Favourite" if max(p.values()) < 0.65 else "Strong favourite"
 
-with st.container(border=True):
-    st.html(f'<div style="display:flex;justify-content:space-between;font-size:1.2rem;margin-bottom:.2rem">'
+with st.container(border=True, key="fmcard_match"):
+    st.html(ui.club_stripe(home, away)
+            + f'<div style="display:flex;justify-content:space-between;font-size:1.2rem;margin-bottom:.2rem">'
             f'{ui.badge(home)}<span class="ml-muted">vs</span>{ui.badge(away)}</div>'
             + ui.prob_bar(home, away, row["p_h"], row["p_d"], row["p_a"], big=True))
     st.markdown(f"**Most likely: {headline} ({p[pick]:.0%})** · {confidence}")
@@ -75,7 +77,7 @@ if "top_scores" in row and pd.notna(row.get("top_scores")):
         n = int(round(len(row["grid"]) ** 0.5))
         g = np.array(row["grid"]).reshape(n, n)[:6, :6] * 100
         fig = px.imshow(g, x=[str(i) for i in range(6)], y=[str(i) for i in range(6)], text_auto=".0f",
-                        color_continuous_scale="Greens", labels=dict(x=f"{away} goals", y=f"{home} goals"))
+                        color_continuous_scale=theme.league_scale(league), labels=dict(x=f"{away} goals", y=f"{home} goals"))
         fig.update_traces(hovertemplate=f"{home} %{{y}} – %{{x}} {away}: %{{z:.1f}}%<extra></extra>")
         fig.update_layout(height=380, margin=dict(l=0, r=0, t=10, b=0), coloraxis_showscale=False)
         st.plotly_chart(fig, width="stretch")

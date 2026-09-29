@@ -20,16 +20,21 @@ if up.empty:
     st.info(f"No upcoming {name} fixtures right now. The season may be on a break.")
     st.stop()
 gw = int(up.sort_values("kickoff")["gw"].iloc[0])
-week = up[up["gw"] == gw].sort_values("kickoff")
 round_name = "Gameweek" if league == "EPL" else "Matchday"
-
+week = up[up["gw"] == gw].sort_values("kickoff")
+st.html(ui.banner(name, f"{round_name} {gw} · {len(week)} games"))
 st.subheader(f"{round_name} {gw} predictions")
+now = pd.Timestamp.now(tz="UTC")
 cols = st.columns(2)
 for i, f in enumerate(week.itertuples()):
-    with cols[i % 2], st.container(border=True):
-        when = pd.Timestamp(f.kickoff).tz_convert("Europe/London").strftime("%a %d %b · %H:%M")
-        st.html(f'<div class="ml-muted">{when} UK</div>'
-                f'<div style="display:flex;justify-content:space-between;margin:.2rem 0">'
+    with cols[i % 2], st.container(border=True, key=f"fmcard_fx{i}"):
+        ko = pd.Timestamp(f.kickoff)
+        when = ko.tz_convert("Europe/London").strftime("%a %d %b · %H:%M")
+        soon = now <= ko <= now + pd.Timedelta(hours=48)
+        st.html(ui.club_stripe(f.home, f.away)
+                + (f'<div class="ml-muted"><span class="fm-live"></span><span class="fm-soon">Soon</span> · {when} UK</div>'
+                   if soon else f'<div class="ml-muted">{when} UK</div>')
+                + f'<div style="display:flex;justify-content:space-between;margin:.2rem 0">'
                 f'{ui.badge(f.home)}<span class="ml-muted">vs</span>{ui.badge(f.away)}</div>'
                 + ui.prob_bar(f.home, f.away, f.p_h, f.p_d, f.p_a)
                 + (f'<div class="ml-muted" style="margin-top:.35rem">Likely score '

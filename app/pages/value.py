@@ -1,7 +1,7 @@
 import pandas as pd
 import streamlit as st
 
-from app import data, ui
+from app import data, theme, ui
 
 st.title("What's he worth?")
 st.markdown("What a player's numbers say he's worth, next to his market value.")
@@ -15,7 +15,7 @@ players = data.table("players").set_index("pid")
 vm = data.meta("value_metrics")
 snap = pd.Timestamp(vm.get("snapshot_date", "2026-06-12")).strftime("%B %Y")
 GROUPS = [c for c in vals.columns if c not in ("pid", "league", "est_value", "tm_value", "value_ratio", "verdict")]
-VERDICT_COLOUR = {"Bargain": "#0E8A5F", "Fair price": "#8A948F", "Pricey": "#C2410C", "No market value": "#8A948F"}
+VERDICT_COLOUR = {"Bargain": theme.GOOD, "Fair price": theme.NEUTRAL, "Pricey": theme.BAD, "No market value": theme.NEUTRAL}
 
 pids = vals.sort_values("est_value", ascending=False)["pid"].tolist()
 pid = ui.player_picker("Player", pids, help="Players in Europe's top 5 leagues with at least 450 league "
@@ -26,8 +26,9 @@ if pid is None:
 v = vals.set_index("pid").loc[pid]
 p = players.loc[pid]
 
-with st.container(border=True):
-    st.html(f'<div style="font-size:1.3rem;font-weight:700">{p["name"]}</div>'
+with st.container(border=True, key="fmcard_player"):
+    st.html(ui.club_stripe(p["team"])
+            + f'<div style="font-size:1.3rem;font-weight:700">{p["name"]}</div>'
             f'<div class="ml-muted">{ui.badge(p["team"])} · {p["league_name"]} · {p.get("sub_position") or p["pos"]} · '
             f'age {p["age"]:.0f}'
             + (f' · contract to {pd.Timestamp(p["contract_expiration_date"]).year}'
@@ -38,7 +39,7 @@ with st.container(border=True):
               help="Transfermarkt's valuation. Their free data stopped updating in June 2026.")
     with k3:
         st.markdown("Verdict")
-        st.html(ui.pill(v["verdict"], VERDICT_COLOUR.get(v["verdict"], "#888")))
+        st.html(ui.pill(v["verdict"], VERDICT_COLOUR.get(v["verdict"], "#888"), shine=v["verdict"] == "Bargain"))
         if pd.notna(v["value_ratio"]):
             gap = v["value_ratio"] - 1
             st.caption(f"Stats suggest {abs(gap):.0%} {'more' if gap > 0 else 'less'} than the market")
