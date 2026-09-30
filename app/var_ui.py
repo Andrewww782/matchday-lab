@@ -104,6 +104,9 @@ def card(inc: dict, compact: bool = False, scope: str = "big"):
                 + f'<div class="fm-call">{html.escape(inc["headline"])}</div>'
                 + (f'<div class="ml-muted">Referee: {html.escape(str(inc["referee"]))}</div>'
                    if inc.get("referee") and str(inc.get("referee")) != "None" else ""))
+        if inc["kind"] in ("goal_overturned", "goal_stands") and not str(iid).startswith("flag-"):
+            st.page_link(st.session_state["pages"]["offside"], label="Check the offside yourself",
+                         icon=":material/straighten:", query_params={"call": iid})
         if not compact:
             with st.expander("What happened (match commentary)"):
                 st.markdown("\n".join(f"- {html.escape(line)}" for line in str(inc["lines"]).split("\n")))

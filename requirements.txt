@@ -8,3 +8,7 @@ requests==2.32.5
 # Fan VAR votes (Neon Postgres in production, SQLite locally)
 SQLAlchemy==2.1.1
 psycopg[binary]==3.3.6
+# Offside check: player detection (YOLOX via ONNX) and clicking on pictures
+onnxruntime==1.30.0
+streamlit-image-coordinates==0.4.1
+Pillow==12.3.0

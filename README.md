@@ -6,6 +6,7 @@ Serie A, Bundesliga, Ligue 1). Live at https://footyminds.streamlit.app.
 | Page | Question it answers | How |
 |---|---|---|
 | **Fan VAR** (headline act) | Did the ref get it right? | Every penalty, red card, VAR check and ruled-out goal in all five leagues (parsed from ESPN match commentary, daily); fans vote right/wrong call (one vote per device, no sign-up), flag missed incidents, and see fans-vs-neutrals splits, a referee report card and "Who gets robbed?"; official highlights embedded from YouTube |
+| Offside check | Was it offside? | Upload a screenshot (or try the demo): players spotted by YOLOX (ONNX on CPU, Apache-2.0), you pick attacker + last defender and two lines parallel to the goal line; the vanishing point gives true-perspective offside lines. Optional: 4 box corners → gap in cm, top-down map, 3D view. Linked from Fan VAR goal calls |
 | This week | What's happening this gameweek/matchday? | Hottest Fan VAR calls, then fixture cards with win/draw/loss chances, per league |
 | Who wins? | Who's favourite, what's the score, and why? | Blend of a form model (Elo + rolling xG/shots/points, ~18,000 games) and a Dixon-Coles goals model; scorelines, both-teams-to-score, over 2.5, clean sheets; "Why?" panel; public track record vs bookmakers |
 | Where will they finish? | Title / Champions League / relegation odds | 10,000-season Monte Carlo with team-strength uncertainty and each league's rules (incl. Bundesliga/Ligue 1 play-offs); what-if mode |
@@ -94,5 +95,5 @@ app/                Streamlit pages + shared UI; no training at runtime; app/clu
 - Understat and FPL are unofficial sources: the pipeline caches everything and falls back to the last good
   copy if a source is down.
 
-Not affiliated with any league, club, FPL, Understat or Transfermarkt. No club crests or league logos are
+Not affiliated with any league, club, FPL, Understat or Transfermarkt. Demo photo for the offside check: Roger Cornfoot, CC BY-SA 2.0 (Wikimedia Commons). Player detection: YOLOX by Megvii, Apache-2.0. No club crests or league logos are
 used. For fun and learning, not betting advice.

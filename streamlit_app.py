@@ -16,6 +16,7 @@ PAGES = {
     "scout": st.Page("app/pages/scout.py", title="Who plays like him?", icon=":material/person_search:", url_path="scout"),
     "compare": st.Page("app/pages/compare.py", title="Head-to-head", icon=":material/compare_arrows:", url_path="compare"),
     "sim": st.Page("app/pages/simulator.py", title="Where will they finish?", icon=":material/leaderboard:", url_path="table"),
+    "offside": st.Page("app/pages/offside.py", title="Offside check", icon=":material/straighten:", url_path="offside"),
     "var": st.Page("app/pages/var.py", title="Fan VAR", icon=":material/sports:", url_path="var"),
     "about": st.Page("app/pages/about.py", title="How it works", icon=":material/info:", url_path="about"),
     "find": st.Page("app/pages/find.py", title="Find a player", icon=":material/search:", url_path="find"),
@@ -27,7 +28,7 @@ st.session_state["pages"] = PAGES
 # Fantasy (app/pages/fpl.py) is parked for a later update: its data still builds, it's just not in the menu.
 nav = st.navigation({
     "": [PAGES["home"], PAGES["var"], PAGES["about"], PAGES["find"]],
-    "Matches": [PAGES["match"], PAGES["sim"]],
+    "Matches": [PAGES["match"], PAGES["sim"], PAGES["offside"]],
     "Players": [PAGES["value"], PAGES["scout"], PAGES["compare"]],
 }, position="top")
 

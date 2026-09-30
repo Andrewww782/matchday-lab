@@ -7,7 +7,7 @@ from streamlit.testing.v1 import AppTest
 ROOT = Path(__file__).resolve().parents[1]
 PAGES = ["app/pages/home.py", "app/pages/var.py", "app/pages/match.py", "app/pages/value.py", "app/pages/scout.py",
          "app/pages/compare.py", "app/pages/simulator.py", "app/pages/about.py",
-         "app/pages/find.py"]
+         "app/pages/find.py", "app/pages/offside.py"]
 
 
 def run(page: str, **query) -> AppTest:
@@ -287,3 +287,33 @@ def test_fantasy_is_out_of_the_menu():
     src = (ROOT / "streamlit_app.py").read_text(encoding="utf-8")
     nav = src[src.index("st.navigation("):]
     assert 'PAGES["fpl"]' not in nav and 'PAGES["var"]' in nav
+
+
+# --- Offside check ------------------------------------------------------------------------------
+
+def test_offside_page_runs_the_demo(tmp_path):
+    at = run_var(tmp_path, page="app/pages/offside.py")
+    assert not at.exception, [e.value for e in at.exception]
+    assert any(s.value == "Click the attacker" for s in at.subheader)
+    html = " ".join(str(h.proto) for h in at.get("html"))
+    assert "fm-hero" in html and "offside" in html.lower()
+
+
+def test_offside_page_opened_from_a_call(tmp_path):
+    import pandas as pd
+    inc = pd.read_parquet(ROOT / "data" / "incidents.parquet")
+    iid = inc[inc.kind == "goal_overturned"].incident_id.iloc[0]
+    at = AppTest.from_file(str(ROOT / "streamlit_app.py"), default_timeout=60)
+    at.secrets["connections"] = {"fanvar": {"url": f"sqlite:///{tmp_path / 'fanvar.db'}"}}
+    at.run()
+    at.switch_page("app/pages/offside.py")
+    at.query_params["call"] = iid
+    at.run()
+    assert not at.exception, [e.value for e in at.exception]
+    assert "ruled out" in " ".join(str(h.proto) for h in at.get("html"))
+
+
+def test_goal_calls_link_to_the_offside_check(tmp_path):
+    at = run_var(tmp_path, league="Premier League")  # its latest round has goals ruled out and goals that stood
+    links = [str(el.proto) for el in at.get("page_link")]
+    assert any("offside" in l and "call" in l for l in links)

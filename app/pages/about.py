@@ -64,6 +64,14 @@ st.markdown("""
   report card and "Who gets robbed?" only count calls with at least 5 votes.
 - Your device id is a random code in a cookie. We never ask who you are.
 
+### How the offside check works
+- Pitch lines parallel to the goal line all meet at one point in a camera picture. You click two of them, we find
+  that point, and each player's offside line runs from his feet to it: the same trick broadcasters use.
+- Players are spotted by **YOLOX** (open source, Apache-2.0). Your screenshot is only used for the check and never stored.
+- Optional: click the four corners of the penalty area or six-yard box and we measure the gap in centimetres and
+  show it from above and in 3D.
+- It compares feet in the frame you pick; real offside uses any body part you can score with, at the moment the ball is played.
+
 ### Things to know
 - These are **probabilities, not certainties**. A 60% favourite still fails to win 4 times in 10, and
   even the single most likely scoreline usually happens only about 1 time in 8.

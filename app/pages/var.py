@@ -23,6 +23,8 @@ ui.hero("You're the <em>VAR</em>",
         "judge it, and see whether other fans agree.",
         tag=f"{round_name} {latest} · {big_latest} big calls" if latest else "")
 
+st.page_link(st.session_state["pages"]["offside"], label="Was it offside? Draw the lines yourself",
+             icon=":material/straighten:")
 teams = data.teams(None)
 c1, c2 = st.columns([1, 1])
 with c1:
