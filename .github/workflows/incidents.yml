@@ -1,0 +1,67 @@
+name: Daily Fan VAR refresh
+
+on:
+  schedule:
+    # Every morning, so weekend calls are up on Monday without waiting for Tuesday's full refresh.
+    - cron: "0 7 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: refresh   # never at the same time as the full refresh (both push data)
+  cancel-in-progress: false
+
+jobs:
+  incidents:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements-pipeline.txt
+
+      - name: Cache downloads (finished matches are fetched once)
+        uses: actions/cache@v5
+        with:
+          path: data/raw
+          key: raw-${{ github.run_id }}
+          restore-keys: raw-
+
+      - run: pip install -r requirements-pipeline.txt
+
+      - name: Refereeing calls from last night's matches
+        run: python -m pipeline.build_incidents
+
+      - name: Official highlights (skipped until the YOUTUBE_API_KEY secret is set)
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: python -m pipeline.build_highlights
+
+      - name: Check the app still works with the new data
+        run: python -m pytest -q
+
+      - name: Commit (Streamlit Cloud redeploys on push)
+        run: |
+          git config user.name "footyminds-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/incidents.parquet data/var_matches.parquet data/lineups.parquet
+          [ -f data/highlights.parquet ] && git add data/highlights.parquet
+          git diff --cached --quiet && echo "No changes" && exit 0
+          git commit -m "Fan VAR calls $(date -u +%Y-%m-%d)"
+          git pull --rebase
+          git push
+
+      - name: Open an issue if it failed
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue list --state open --search "in:title \"Fan VAR refresh failed\"" --json number --jq '.[0].number' | grep -q . \
+            || gh issue create --title "Fan VAR refresh failed" --body "The daily Fan VAR refresh failed on $(date -u +%Y-%m-%d). Log: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

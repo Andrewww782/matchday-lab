@@ -190,7 +190,10 @@ def footer():
             + sticker("Europe's top 5", "lime", 3)
             + f"<p>{html.escape(season)}Premier League, La Liga, Serie A, Bundesliga, Ligue 1{html.escape(when)}</p>"
             "<p>Data: Understat, football-data.co.uk, Fantasy Premier League and Transfermarkt.</p>"
+            "<p>Match events: ESPN. Highlights: official league channels on YouTube.</p>"
             "<p>Not affiliated with any league, club or FPL. Just for fun, not betting advice.</p></div>")
+    from app import votes  # the device id cookie is written once, here at the bottom of every page
+    votes.write_cookies()
     inject_motion()
 
 

@@ -8,8 +8,8 @@ import time
 
 import pandas as pd
 
-from pipeline import (build_fixtures, build_fpl, build_matches, build_players, build_scout,
-                      http, train_goals, train_match, train_value)
+from pipeline import (build_fixtures, build_fpl, build_highlights, build_incidents, build_matches,
+                      build_players, build_scout, http, train_goals, train_match, train_value)
 from pipeline.config import CURRENT_SEASON, DATA, LEAGUES, season_label
 from pipeline.sources import fpl
 
@@ -21,7 +21,9 @@ STEPS = [
     ("goals model", train_goals.main),
     ("value model", train_value.main),
     ("scouting", build_scout.main),
-    ("fpl", build_fpl.main),
+    ("fpl", build_fpl.main),                      # parked in the app, but kept fresh for later
+    ("fan var: incidents", build_incidents.main),
+    ("fan var: highlights", build_highlights.main),
 ]
 
 

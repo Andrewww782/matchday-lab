@@ -5,13 +5,15 @@ Serie A, Bundesliga, Ligue 1). Live at https://footyminds.streamlit.app.
 
 | Page | Question it answers | How |
 |---|---|---|
-| This week | What's happening this gameweek/matchday? | Fixture cards with win/draw/loss chances, per league |
+| **Fan VAR** (headline act) | Did the ref get it right? | Every penalty, red card, VAR check and ruled-out goal in all five leagues (parsed from ESPN match commentary, daily); fans vote right/wrong call (one vote per device, no sign-up), flag missed incidents, and see fans-vs-neutrals splits, a referee report card and "Who gets robbed?"; official highlights embedded from YouTube |
+| This week | What's happening this gameweek/matchday? | Hottest Fan VAR calls, then fixture cards with win/draw/loss chances, per league |
 | Who wins? | Who's favourite, what's the score, and why? | Blend of a form model (Elo + rolling xG/shots/points, ~18,000 games) and a Dixon-Coles goals model; scorelines, both-teams-to-score, over 2.5, clean sheets; "Why?" panel; public track record vs bookmakers |
 | Where will they finish? | Title / Champions League / relegation odds | 10,000-season Monte Carlo with team-strength uncertainty and each league's rules (incl. Bundesliga/Ligue 1 play-offs); what-if mode |
 | What's he worth? | Bargain or pricey? | Blend of per-league Ridge + pooled XGBoost on log market value from on-pitch stats (never sees previous price); SHAP "Why?" panel |
 | Who plays like him? | Similar players anywhere in the top 5 | Per-90 profiles, cosine similarity within position, k-means playing styles |
 | Head-to-head | Who's better at what? | Percentile radars + per-90 table |
-| Fantasy picks | Who to pick / captain / transfer? (Premier League) | Expected FPL points by scoring rule; import any team by ID |
+
+Fantasy picks (expected FPL points) still builds every refresh but is **parked**: hidden from the menu until a later update.
 
 ## Run it locally
 
@@ -27,6 +29,21 @@ python -m pytest -q               &REM pipeline checks + every page renders, per
 ```
 
 macOS / Linux: same, but activate with `source .venv/bin/activate`.
+
+## Fan VAR setup (one-time, free, personal accounts)
+
+Without these the site still works: votes go to a local SQLite file and highlights become a YouTube search link.
+
+1. **Votes database (Neon Postgres, free tier).** Create a project at neon.tech, copy the connection string, and add it
+   in Streamlit Cloud → your app → Settings → Secrets (and in a local, gitignored `.streamlit/secrets.toml`):
+   ```toml
+   [connections.fanvar]
+   url = "postgresql://user:password@ep-xxxx.region.aws.neon.tech/neondb?sslmode=require"
+   ```
+   Tables are created automatically on first use.
+2. **Highlights (YouTube Data API, free quota).** In a Google Cloud project enable *YouTube Data API v3*, create an
+   API key, and add it to the GitHub repo as the Actions secret `YOUTUBE_API_KEY`. The daily workflow
+   (`.github/workflows/incidents.yml`) then finds each match's official highlights.
 
 ## How it fits together
 

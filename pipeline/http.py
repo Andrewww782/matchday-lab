@@ -21,16 +21,17 @@ def _path(url: str, suffix: str) -> Path:
     return _CACHE / (hashlib.sha1(url.encode()).hexdigest()[:16] + suffix)
 
 
-def get_bytes(url: str, max_age_hours: float = 12, retries: int = 3) -> bytes:
+def get_bytes(url: str, max_age_hours: float = 12, retries: int = 3, user_agent: str | None = None) -> bytes:
     """GET a URL, reusing a cached copy younger than max_age_hours.
 
-    max_age_hours=float("inf") caches forever (for finished seasons)."""
+    max_age_hours=float("inf") caches forever (for finished seasons). `user_agent` overrides the
+    default for sources that only accept certain clients."""
     p = _path(url, ".bin")
     if p.exists() and (time.time() - p.stat().st_mtime) < max_age_hours * 3600:
         return p.read_bytes()
     for attempt in range(retries):
         try:
-            r = _session.get(url, timeout=60)
+            r = _session.get(url, timeout=60, headers={"User-Agent": user_agent} if user_agent else None)
             r.raise_for_status()
             p.write_bytes(r.content)
             time.sleep(0.5)  # be gentle with free sources
@@ -45,8 +46,8 @@ def get_bytes(url: str, max_age_hours: float = 12, retries: int = 3) -> bytes:
     raise RuntimeError("unreachable")
 
 
-def get_json(url: str, max_age_hours: float = 12):
-    return json.loads(get_bytes(url, max_age_hours))
+def get_json(url: str, max_age_hours: float = 12, user_agent: str | None = None):
+    return json.loads(get_bytes(url, max_age_hours, user_agent=user_agent))
 
 
 def cached_json(key: str, fn, max_age_hours: float = 12):

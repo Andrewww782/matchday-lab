@@ -5,8 +5,8 @@ import pytest
 from streamlit.testing.v1 import AppTest
 
 ROOT = Path(__file__).resolve().parents[1]
-PAGES = ["app/pages/home.py", "app/pages/match.py", "app/pages/value.py", "app/pages/scout.py",
-         "app/pages/compare.py", "app/pages/simulator.py", "app/pages/fpl.py", "app/pages/about.py",
+PAGES = ["app/pages/home.py", "app/pages/var.py", "app/pages/match.py", "app/pages/value.py", "app/pages/scout.py",
+         "app/pages/compare.py", "app/pages/simulator.py", "app/pages/about.py",
          "app/pages/find.py"]
 
 
@@ -209,3 +209,81 @@ def test_every_page_has_the_footer():
     for page in PAGES:
         at = run(page)
         assert "fm-footer" in " ".join(str(h.proto) for h in at.get("html")), page
+
+
+# --- Fan VAR -----------------------------------------------------------------------------------
+
+LEAGUE_KEY = {"Premier League": "EPL", "La Liga": "La_Liga", "Serie A": "Serie_A", "Bundesliga": "Bundesliga",
+              "Ligue 1": "Ligue_1"}
+
+
+def run_var(tmp_path, page="app/pages/var.py", **query) -> AppTest:
+    at = AppTest.from_file(str(ROOT / "streamlit_app.py"), default_timeout=60)
+    at.secrets["connections"] = {"fanvar": {"url": f"sqlite:///{tmp_path / 'fanvar.db'}"}}
+    if "league" in query:  # AppTest loses URL-bound widgets across switch_page; the session keeps it
+        at.session_state["league"] = LEAGUE_KEY[query.pop("league")]
+    for k, v in query.items():
+        at.query_params[k] = v
+    at.run()
+    if page != PAGES[0]:
+        at.switch_page(page).run()
+    return at
+
+
+@pytest.mark.parametrize("league", LEAGUE_NAMES)
+def test_fan_var_renders_every_league(tmp_path, league):
+    at = run_var(tmp_path, league=league)
+    assert not at.exception, [e.value for e in at.exception]
+    html = " ".join(str(h.proto) for h in at.get("html"))
+    assert "fm-hero" in html and "VAR" in html
+    key = LEAGUE_KEY[league]
+    from app import theme
+    assert f"--lg-a:{theme.LEAGUE_THEME[key]['a']}" in html  # really on that league
+    assert any(b.label == "✅ Right call" for b in at.button)
+
+
+def test_voted_calls_show_the_verdict(tmp_path):
+    """(Clicking is covered in the browser check: AppTest doesn't re-render fragments.)"""
+    import pandas as pd
+    import sqlalchemy as sa
+    from app import votes
+    inc = pd.read_parquet(ROOT / "data" / "incidents.parquet")
+    la = inc[(inc.league == "La_Liga") & inc.big]
+    iid = la[la.gw == la.gw.max()].incident_id.iloc[0]
+    eng = sa.create_engine(f"sqlite:///{tmp_path / 'fanvar.db'}")
+    votes.META.create_all(eng)
+    votes.cast_vote(iid, "a" * 32, False, "No penalty", eng=eng)
+    votes.cast_vote(iid, "b" * 32, True, eng=eng)
+    at = AppTest.from_file(str(ROOT / "streamlit_app.py"), default_timeout=60)
+    at.secrets["connections"] = {"fanvar": {"url": f"sqlite:///{tmp_path / 'fanvar.db'}"}}
+    at.session_state["fm_voter"] = "a" * 32
+    at.session_state["league"] = "La_Liga"
+    at.run()
+    at.switch_page("app/pages/var.py").run()
+    assert not at.exception, [e.value for e in at.exception]
+    html = " ".join(str(h.proto) for h in at.get("html"))
+    assert "Wrong call 50%" in html and "2 fans voted" in html
+    assert any(b.label == "Change my vote" for b in at.button)
+
+
+def test_flag_form_accepts_a_flag(tmp_path):
+    at = run_var(tmp_path, league="La Liga")
+    assert at.selectbox(key="var_match_La_Liga").value  # the latest match is picked by default
+    form_btn = next(b for b in at.button if b.label == "Flag it")
+    form_btn.click().run()
+    assert not at.exception, [e.value for e in at.exception]
+    assert any("Flagged" in s.value for s in at.success)
+
+
+def test_home_leads_with_fan_var_and_keeps_predictions(tmp_path):
+    at = run_var(tmp_path, page=PAGES[0])
+    assert not at.exception
+    html = " ".join(str(h.proto) for h in at.get("html"))
+    assert "the <em>VAR</em>" in html and "Likely score" in html
+    assert "fpl" not in " ".join(str(el.proto) for el in at.get("page_link")).lower()
+
+
+def test_fantasy_is_out_of_the_menu():
+    src = (ROOT / "streamlit_app.py").read_text(encoding="utf-8")
+    nav = src[src.index("st.navigation("):]
+    assert 'PAGES["fpl"]' not in nav and 'PAGES["var"]' in nav

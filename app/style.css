@@ -37,18 +37,26 @@
 
 /* ---------- Top bar ----------
    Streamlit puts each menu item in its own wrapper inside one flex row; `order` sets the bar to
-   This week · Matches ▾ · Players ▾ · Fantasy · How it works · [Find a player]. */
+   This week · [Fan VAR] · Matches ▾ · Players ▾ · How it works · [Find a player]. */
 [data-testid=stHeaderLogo]{height:2.1rem!important;max-height:2.1rem!important}
 [data-testid=stToolbar] div:has(> div > button[data-testid=stTopNavSection]){border:2px solid var(--ink);border-radius:999px;
   background:var(--card);padding:.2rem .35rem;align-items:center;gap:.1rem;margin:0 1rem 0 .8rem}
-[data-testid=stToolbar] div:has(> button[data-testid=stTopNavSection]){order:1!important}
-[data-testid=stToolbar] div:has(> div > [data-testid=stTopNavLinkContainer] > a[href$="/fantasy"]){order:2!important}
+[data-testid=stToolbar] div:has(> div > [data-testid=stTopNavLinkContainer] > a[href$="/var"]){order:1!important}
+[data-testid=stToolbar] div:has(> button[data-testid=stTopNavSection]){order:2!important}
 [data-testid=stToolbar] div:has(> div > [data-testid=stTopNavLinkContainer] > a[href$="/about"]){order:3!important}
 [data-testid=stToolbar] div:has(> div > [data-testid=stTopNavLinkContainer] > a[href$="/find"]){order:4!important;margin-left:auto}
 [data-testid=stTopNavLink] [data-testid=stIconMaterial]{display:none}
 [data-testid=stTopNavLink],[data-testid=stTopNavSection]{border-radius:999px!important;transition:background-color .2s}
 [data-testid=stTopNavLink] p,[data-testid=stTopNavSection] p{font-weight:500}
 [data-testid=stTopNavLink]:hover,[data-testid=stTopNavSection]:hover{background:rgba(22,22,22,.07)!important}
+/* Fan VAR: the headline act, a red sticker in the bar */
+a[data-testid=stTopNavLink][href$="/var"]{background:var(--red)!important;border:2px solid var(--ink);border-radius:.6rem!important;
+  transform:rotate(-2deg);box-shadow:2px 2px 0 var(--ink);transition:transform .15s}
+a[data-testid=stTopNavLink][href$="/var"]:hover{transform:rotate(2deg) scale(1.04)}
+a[data-testid=stTopNavLink][href$="/var"] p{font-family:var(--display);text-transform:uppercase;font-size:.82rem;font-weight:400}
+a[data-testid=stTopNavLink][href$="/var"] *{color:#fff!important}
+[data-testid=stSidebarNavLink][href$="/var"]{background:var(--red)}
+[data-testid=stSidebarNavLink][href$="/var"] *{color:#fff!important}
 a[data-testid=stTopNavLink][href$="/find"]{background:var(--lime)!important;border:2px solid var(--ink);border-radius:.7rem!important;
   box-shadow:3px 3px 0 var(--ink);transition:transform .12s,box-shadow .12s}
 a[data-testid=stTopNavLink][href$="/find"] p{font-family:var(--display);text-transform:uppercase;font-size:.82rem;font-weight:400}
@@ -245,3 +253,14 @@ a[data-testid=stTopNavLink][href$="/find"]:active{transform:translate(3px,3px);b
 /* Phone menu (the top bar folds into a drawer on small screens). */
 [data-testid=stSidebar]{background:var(--paper)!important;border-right:2px solid var(--ink)}
 [data-testid=stSidebarNavLink][href$="/find"]{background:var(--lime);border:2px solid var(--ink);box-shadow:3px 3px 0 var(--ink)}
+
+/* Fan VAR cards */
+.fm-call{font-family:var(--display);text-transform:uppercase;font-size:1.25rem;line-height:1.15;margin:.45rem 0 .25rem}
+[class*="st-key-fmcard_var"] [data-testid=stBaseButton-secondary]{font-weight:700;min-height:2.8rem}
+[class*="st-key-fmcard_var"] [data-testid=stBaseButton-tertiary] p{font-size:.8rem;opacity:.7}
+.fm-score{display:flex;align-items:center;gap:.55rem;flex-wrap:wrap;font-weight:700}
+.fm-score .sc{font-weight:700;font-variant-numeric:tabular-nums;font-size:.9rem;padding:.05rem .45rem;border-radius:.4rem;background:var(--ink);color:var(--lime)}
+[class*="st-key-fm_r_"] button{background:var(--lime)!important}
+[class*="st-key-fm_w_"] button{background:var(--red)!important}
+[class*="st-key-fm_w_"] button *{color:#fff!important}
+[class*="st-key-fm_r_"] button:active,[class*="st-key-fm_w_"] button:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}

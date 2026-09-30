@@ -38,6 +38,8 @@ jobs:
       - run: pip install -r requirements-pipeline.txt
 
       - name: Rebuild data and models
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: python -m pipeline.run_all
 
       - name: Check the app still works with the new data

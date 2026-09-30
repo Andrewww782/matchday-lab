@@ -5,3 +5,4 @@ data/build/
 scratch/
 *.pyc
 .pytest_cache/
+.streamlit/secrets.toml

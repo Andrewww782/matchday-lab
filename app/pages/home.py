@@ -3,7 +3,7 @@ import html
 import pandas as pd
 import streamlit as st
 
-from app import data, ui
+from app import data, ui, var_ui, votes
 
 PAGES = st.session_state["pages"]
 
@@ -13,24 +13,46 @@ if not data.available("upcoming"):
 
 league = ui.league_picker()
 name = data.league_name(league)
+the_name = f"the {name}" if league == "EPL" else name
 up = data.table("upcoming")
 up = up[up["league"] == league]
 round_name = "Gameweek" if league == "EPL" else "Matchday"
 gw = int(up.sort_values("kickoff")["gw"].iloc[0]) if len(up) else None
 week = up[up["gw"] == gw].sort_values("kickoff") if gw else up
 
-the = "the " if league == "EPL" else ""
-ui.hero(f"This week in {the}<em>{html.escape(name)}</em>",
-        "Predictions, player values and scouting, all in plain English. Updated every week.",
-        tag=f"{round_name} {gw} · {len(week)} games" if gw else "")
-_, mid, _ = st.columns([1, 2, 1])
-with mid:
-    if data.available("players"):
-        ui.player_search(key="home_find")
+# ---- Fan VAR: the headline act ----
+hot = pd.DataFrame()
+if data.available("incidents", "var_matches"):
+    inc = data.table("incidents")
+    inc = inc[(inc.league == league) & inc.big]
+    last = inc.gw.max() if len(inc) else None
+    hot = inc[inc.gw == last].copy()
+    if len(hot):
+        s = votes.summary(hot.incident_id)
+        hot = hot.join(s, on="incident_id")
+        # the calls fans are arguing about most, then the newest
+        hot["heat"] = hot["n"].fillna(0) * (1 - (hot["wrong_pct"].fillna(0.5) - 0.5).abs())
+        drama = {"goal_overturned": 6, "var_penalty": 5, "var_red": 5, "red": 4, "penalty": 3, "var_no_penalty": 2}
+        hot["drama"] = hot["kind"].map(drama).fillna(1)
+        hot = hot.sort_values(["heat", "drama", "kickoff"], ascending=False).head(3)
+ui.hero("You're the <em>VAR</em>",
+        f"Every big refereeing call in {the_name}. Watch it, judge it, see if other fans agree. "
+        "Plus match predictions and player values.",
+        tag=f"{round_name} {int(last)} · {len(inc[inc.gw == last])} big calls" if len(hot) else "")
+if len(hot):
+    ui.eyebrow("Your call")
+    st.subheader("Hottest calls right now")
+    cols = st.columns(len(hot))
+    for c, r in zip(cols, hot.to_dict("records")):
+        with c:
+            var_ui.card(r, compact=True, scope="home")
+    st.page_link(PAGES["var"], label="See every call and give your verdict", icon=":material/sports:")
 
+# ---- This week's predictions ----
 if up.empty:
     st.info(f"No upcoming {name} fixtures right now. The season may be on a break.")
     st.stop()
+st.divider()
 ui.eyebrow("This week's games")
 st.subheader(f"{round_name} {gw} predictions")
 now = pd.Timestamp.now(tz="UTC")
@@ -55,21 +77,8 @@ for i, f in enumerate(week.itertuples()):
 st.divider()
 left, right = st.columns([3, 2], gap="large")
 with left:
-    if league == "EPL" and data.available("fpl_players"):
-        ui.eyebrow("Fantasy")
-        st.subheader("Players to watch this week")
-        fp = data.table("fpl_players")
-        top = fp.sort_values("xpts_next", ascending=False).head(8)
-        st.dataframe(
-            top[["web_name", "team", "pos", "xpts_next", "form"]].rename(columns={
-                "web_name": "Player", "team": "Club", "pos": "Pos",
-                "xpts_next": "Expected FPL pts", "form": "Form"}),
-            hide_index=True, width="stretch",
-            column_config={"Expected FPL pts": st.column_config.ProgressColumn(
-                format="%.1f", min_value=0, max_value=float(top["xpts_next"].max()))})
-        st.page_link(PAGES["fpl"], label="More fantasy picks", icon=":material/arrow_forward:")
-    elif data.available("values", "players"):
-        ui.eyebrow("Player values")
+    if data.available("values", "players"):
+        ui.eyebrow("Transfer watch")
         st.subheader(f"Bargains in {name}")
         st.caption("Players whose numbers say they're worth more than their market value.")
         v = data.table("values")
@@ -81,9 +90,13 @@ with left:
             "Numbers say": top["est_value"].map(ui.money), "Market": top["tm_value"].map(ui.money)}),
             hide_index=True, width="stretch")
         st.page_link(PAGES["value"], label="More player values", icon=":material/arrow_forward:")
+    if data.available("players"):
+        st.markdown("")
+        ui.player_search(key="home_find")
 with right, st.container(key="fmexplore"):
     st.subheader("Explore")
-    for key, blurb in [("match", "Pick any two clubs and see who's favourite, and why."),
+    for key, blurb in [("var", "Judge every big refereeing call. Were the refs right?"),
+                       ("match", "Pick any two clubs and see who's favourite, and why."),
                        ("sim", "Title, Champions League and relegation odds, plus what-ifs."),
                        ("value", "Is he a bargain or overpriced, based on his numbers?"),
                        ("scout", "Find players with a similar style, anywhere in Europe."),
