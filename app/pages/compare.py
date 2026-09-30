@@ -2,9 +2,9 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-from app import data, ui
+from app import data, theme, ui
 
-st.title("Head-to-head")
+st.title("Head-to-*head*")
 st.markdown("Put up to three players from Europe's top five leagues side by side. Scores are "
             "percentiles: 90 means better than 90% of players in his position.")
 
@@ -44,7 +44,7 @@ if not full:
                "(defensive stats are only available for the Premier League). Percentiles are against "
                "players in the same position across all five leagues.")
 
-COLOURS = [ui.HOME, ui.AWAY, "#D97706"]
+COLOURS = [theme.RED, theme.INK, theme.LIME_DARK]
 fig = go.Figure()
 theta = [labels[s] for s in stats]
 for (c, r), colour in zip(rows.iterrows(), COLOURS):
@@ -54,6 +54,7 @@ for (c, r), colour in zip(rows.iterrows(), COLOURS):
                                   hovertemplate="%{theta}: %{r:.0f}<extra>" + r["web_name"] + "</extra>"))
 fig.update_layout(polar=dict(radialaxis=dict(range=[0, 100], showticklabels=False, ticks="")),
                   legend=dict(orientation="h", y=-0.1), margin=dict(l=40, r=40, t=20, b=20), height=460)
+theme.style_chart(fig)
 st.plotly_chart(fig, width="stretch")
 
 # Stat-by-stat table, per 90 minutes, with the leader marked.

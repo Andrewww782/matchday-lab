@@ -6,7 +6,8 @@ from streamlit.testing.v1 import AppTest
 
 ROOT = Path(__file__).resolve().parents[1]
 PAGES = ["app/pages/home.py", "app/pages/match.py", "app/pages/value.py", "app/pages/scout.py",
-         "app/pages/compare.py", "app/pages/simulator.py", "app/pages/fpl.py", "app/pages/about.py"]
+         "app/pages/compare.py", "app/pages/simulator.py", "app/pages/fpl.py", "app/pages/about.py",
+         "app/pages/find.py"]
 
 
 def run(page: str, **query) -> AppTest:
@@ -175,3 +176,36 @@ def test_scout_shows_similarity_rings():
     at = run("app/pages/scout.py", player="Bukayo Saka · Arsenal")
     assert not at.exception
     assert "fm-ring" in " ".join(str(h.proto) for h in at.get("html"))
+
+
+# --- Krackerz-style look -----------------------------------------------------------------------
+
+def test_palette_text_pairs_are_readable():
+    from app import theme as t
+    for fg, bg in [("#FFFFFF", t.RED), ("#FFFFFF", t.RUST), ("#FFFFFF", t.MAROON), ("#FFFFFF", t.DEEP),
+                   (t.INK, t.LIME), (t.INK, t.PAPER), (t.INK, t.STONE), (t.INK, t.CARD), (t.LIME, t.INK)]:
+        assert t.contrast(fg, bg) >= 4.5, (fg, bg)
+    assert t.text_on(t.STONE) == t.INK and t.text_on(t.RED) == "#FFFFFF"
+
+
+def test_stickers_and_eyebrows_render():
+    from app import ui
+    s = ui.sticker("Gameweek 6 · 10 games", "ink", -3)
+    assert "fm-sticker ink" in s and "--tilt:-3deg" in s and "Gameweek 6" in s
+    assert "<script" not in ui.sticker("<script>x</script>")  # escaped
+    assert 'class="fm-banner"' in ui.banner("Serie A", "Matchday 6") and "fm-sticker league" in ui.banner("Serie A")
+
+
+def test_find_page_links_out():
+    at = run("app/pages/find.py")
+    assert not at.exception
+    at.selectbox(key="find_player").select_index(0).run()
+    assert not at.exception
+    links = " ".join(str(el.proto) for el in at.get("page_link"))
+    assert "value" in links and "scout" in links and "compare" in links
+
+
+def test_every_page_has_the_footer():
+    for page in PAGES:
+        at = run(page)
+        assert "fm-footer" in " ".join(str(h.proto) for h in at.get("html")), page

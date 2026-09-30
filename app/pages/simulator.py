@@ -5,7 +5,7 @@ import streamlit as st
 from app import data, theme, ui
 from app.simulate import current_table, simulate
 
-st.title("Where will they finish?")
+st.title("Where will they *finish?*")
 st.markdown("We play out the rest of the season **10,000 times** using the match predictions, then count "
             "how often each club finishes where. You can lock in results to see what changes.")
 
@@ -61,6 +61,7 @@ def run(league: str, locked_items: tuple, v: int) -> dict:  # v: data version, s
 res = run(league, tuple(sorted(locked.items())), data.version())
 s = res["summary"].join(table[["Pts", "P"]])
 
+ui.eyebrow("Season odds")
 st.subheader("Chances by the end of the season")
 cols = {"Club": s.index, "Now": s["Pts"].astype(int), "Expected pts": s["exp_pts"].round(0).astype(int),
         "Exp GD": s["exp_gd"].astype(int),
@@ -80,6 +81,7 @@ st.dataframe(show, hide_index=True, width="stretch", height=38 + 35 * len(show),
                             "Expected pts": st.column_config.NumberColumn("Final pts (expected)"),
                             "Exp GD": st.column_config.NumberColumn("Goal diff (expected)", format="%+d")})
 
+ui.eyebrow("Every position")
 st.subheader("Where each club could finish")
 pos = res["positions"].loc[s.index]
 fig = px.imshow(pos.to_numpy(), x=[str(c) for c in pos.columns], y=pos.index.tolist(),
@@ -87,6 +89,7 @@ fig = px.imshow(pos.to_numpy(), x=[str(c) for c in pos.columns], y=pos.index.tol
                 labels=dict(x="Finishing position", y="", color="Chance"))
 fig.update_traces(hovertemplate="%{y}: %{z:.0%} chance of finishing %{x}<extra></extra>")
 fig.update_layout(height=30 * len(pos) + 20, margin=dict(l=0, r=0, t=10, b=0), coloraxis_showscale=False)
+theme.style_chart(fig)
 st.plotly_chart(fig, width="stretch")
 
 with st.expander("Current table"):

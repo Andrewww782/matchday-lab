@@ -3,7 +3,7 @@ import streamlit as st
 
 from app import data, theme, ui
 
-st.title("What's he worth?")
+st.title("What's he *worth?*")
 st.markdown("What a player's numbers say he's worth, next to his market value.")
 
 if not data.available("values", "players"):
@@ -44,6 +44,7 @@ with st.container(border=True, key="fmcard_player"):
             gap = v["value_ratio"] - 1
             st.caption(f"Stats suggest {abs(gap):.0%} {'more' if gap > 0 else 'less'} than the market")
 
+ui.eyebrow("The reasons")
 st.subheader("Why?")
 items = sorted([(g, float(v[g])) for g in GROUPS if abs(v[g]) >= 2], key=lambda x: -abs(x[1]))
 if items:
@@ -76,6 +77,7 @@ Half of its estimates are within about
 """)
 
 st.divider()
+ui.eyebrow("Market watch")
 st.subheader("Bargains and pricey players")
 lg = ui.league_filter(key="vleague")
 pos = st.segmented_control("Position", ["All", "GK", "DEF", "MID", "FWD"], default="All", key="vpos")

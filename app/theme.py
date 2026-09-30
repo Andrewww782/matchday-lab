@@ -1,9 +1,18 @@
-"""Colours in one place: league palettes, fixed meanings and chart helpers.
+"""Colours in one place: the Krackerz-inspired palette, fixed meanings and chart helpers.
 
-Each league has two deep colours (`a`, `b`) that white text can sit on, and a bright `hi`
-used only for decoration (underlines, glows, rings), never behind text."""
+Cream paper, ink, tomato red down to deep maroon, and neon lime for stickers and buttons.
+League colours survive only as an accent (the league sticker and heatmap shading)."""
 
-BRAND = {"a": "#0A5C40", "b": "#0C7A54", "hi": "#2BE07F"}
+PAPER, CARD, INK, STONE = "#F7F6F0", "#FFFFFF", "#161616", "#D9D3C7"
+RED, RUST, MAROON, DEEP = "#CF2B09", "#A52207", "#7C1A06", "#580D14"
+LIME, LIME_DARK = "#C8FF2E", "#5E7F00"
+TILE_SHADES = [RED, RUST, MAROON, DEEP]  # number tiles across a row
+
+# Fixed meanings, the same on every page. Labels always accompany colour.
+HOME, DRAW, AWAY = RED, STONE, INK
+GOOD, NEUTRAL, BAD = LIME, STONE, RED
+
+BRAND = {"a": DEEP, "b": RED, "hi": LIME}
 LEAGUE_THEME = {
     "EPL": {"a": "#37003C", "b": "#9C0050", "hi": "#FF2882"},
     "La_Liga": {"a": "#A31F0C", "b": "#C2410C", "hi": "#FF9F1C"},
@@ -11,10 +20,7 @@ LEAGUE_THEME = {
     "Bundesliga": {"a": "#7A0A10", "b": "#C8102E", "hi": "#FF4D5A"},
     "Ligue_1": {"a": "#091C3E", "b": "#1B3A7A", "hi": "#DAE025"},
 }
-
-# Fixed meanings, the same on every page.
-HOME, DRAW, AWAY = "#0C7A54", "#6B7570", "#3F6FD8"
-GOOD, CAUTION, BAD, NEUTRAL = "#0C7A54", "#B7791F", "#C2410C", "#8A948F"
+CHART = [RED, INK, LIME_DARK, MAROON, "#D97706", "#6B645C"]
 
 
 def league(key: str | None) -> dict:
@@ -45,16 +51,24 @@ def contrast(c1: str, c2: str) -> float:
     return (hi + 0.05) / (lo + 0.05)
 
 
+def text_on(bg: str) -> str:
+    """Ink or white, whichever reads better on `bg`."""
+    return INK if contrast(INK, bg) >= contrast("#FFFFFF", bg) else "#FFFFFF"
+
+
 def league_scale(key: str | None) -> list:
-    """Heatmap colour scale: pale tint of the league colour up to its deepest shade."""
+    """Heatmap colour scale: paper up to the league's deepest shade (the league touch)."""
     t = league(key)
-    return [[0, mix(t["b"], "#FFFFFF", 0.93)], [0.45, mix(t["b"], "#FFFFFF", 0.45)], [1, t["a"]]]
+    return [[0, mix(t["b"], PAPER, 0.94)], [0.45, mix(t["b"], PAPER, 0.45)], [1, t["a"]]]
 
 
 def style_chart(fig, height: int | None = None):
-    """Shared Plotly look: heading font for titles, transparent background, calm margins."""
-    fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-                      hoverlabel=dict(font_size=13), margin=dict(l=0, r=0, t=10, b=0))
+    """Shared Plotly look: DM Sans, the palette, transparent background, calm margins."""
+    fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", colorway=CHART,
+                      font=dict(family="DM Sans, sans-serif", color=INK),
+                      hoverlabel=dict(font_size=13, font_family="DM Sans, sans-serif"))
+    if fig.layout.margin.l is None:  # keep margins a chart sets itself (the radar needs room for labels)
+        fig.update_layout(margin=dict(l=0, r=0, t=10, b=0))
     if height:
         fig.update_layout(height=height)
     return fig

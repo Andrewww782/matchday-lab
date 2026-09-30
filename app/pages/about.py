@@ -3,7 +3,7 @@ import streamlit as st
 
 from app import data
 
-st.title("How it works")
+st.title("How it *works*")
 m = data.meta("meta")
 mm = data.meta("match_metrics")
 vm = data.meta("value_metrics")

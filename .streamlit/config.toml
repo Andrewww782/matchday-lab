@@ -1,45 +1,97 @@
 [theme]
-primaryColor = "#0C7A54"
-font = "sans-serif"
-headingFont = "'Barlow Condensed', sans-serif"
-headingFontWeights = [800, 700, 700]
-headingFontSizes = ["3rem", "2.25rem", "1.8rem"]
-baseRadius = "medium"
-chartCategoricalColors = ["#0C7A54", "#3F6FD8", "#D97706", "#9C0050", "#0891B2", "#7C3AED", "#C2410C"]
+base = "light"
+primaryColor = "#CF2B09"
+backgroundColor = "#F7F6F0"
+secondaryBackgroundColor = "#EFEDE4"
+textColor = "#161616"
+linkColor = "#A52207"
+borderColor = "#16161633"
+dataframeBorderColor = "#1616161F"
+dataframeHeaderBackgroundColor = "#EFEDE4"
+font = "'DM Sans', sans-serif"
+headingFont = "'Bowlby One', sans-serif"
+headingFontWeights = [400, 400, 400, 400, 400, 400]
+headingFontSizes = ["3.6rem", "2.4rem", "1.9rem"]
+baseRadius = "large"
+buttonRadius = "0.7rem"
+chartCategoricalColors = ["#CF2B09", "#161616", "#5E7F00", "#7C1A06", "#D97706", "#6B645C"]
 
 [[theme.fontFaces]]
-family = "Barlow Condensed"
-url = "app/static/fonts/barlow-condensed-700-latin.woff2"
-weight = "700"
+family = "Bowlby One"
+url = "app/static/fonts/bowlby-one-normal-latin.woff2"
+weight = "400"
+style = "normal"
 unicodeRange = "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD"
 
 [[theme.fontFaces]]
-family = "Barlow Condensed"
-url = "app/static/fonts/barlow-condensed-700-latin-ext.woff2"
-weight = "700"
+family = "Yellowtail"
+url = "app/static/fonts/yellowtail-normal-latin-ext.woff2"
+weight = "400"
+style = "normal"
 unicodeRange = "U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF"
 
 [[theme.fontFaces]]
-family = "Barlow Condensed"
-url = "app/static/fonts/barlow-condensed-800-latin.woff2"
-weight = "800"
+family = "Yellowtail"
+url = "app/static/fonts/yellowtail-normal-latin.woff2"
+weight = "400"
+style = "normal"
 unicodeRange = "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD"
 
 [[theme.fontFaces]]
-family = "Barlow Condensed"
-url = "app/static/fonts/barlow-condensed-800-latin-ext.woff2"
-weight = "800"
+family = "DM Sans"
+url = "app/static/fonts/dm-sans-italic-latin-ext.woff2"
+weight = "400"
+style = "italic"
 unicodeRange = "U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF"
 
-[theme.light]
-backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#F3F6F4"
-textColor = "#14201A"
+[[theme.fontFaces]]
+family = "DM Sans"
+url = "app/static/fonts/dm-sans-italic-latin.woff2"
+weight = "400"
+style = "italic"
+unicodeRange = "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD"
 
-[theme.dark]
-backgroundColor = "#0F1512"
-secondaryBackgroundColor = "#18211C"
-textColor = "#E8EFEA"
+[[theme.fontFaces]]
+family = "DM Sans"
+url = "app/static/fonts/dm-sans-normal-latin-ext.woff2"
+weight = "400"
+style = "normal"
+unicodeRange = "U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF"
+
+[[theme.fontFaces]]
+family = "DM Sans"
+url = "app/static/fonts/dm-sans-normal-latin.woff2"
+weight = "400"
+style = "normal"
+unicodeRange = "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD"
+
+[[theme.fontFaces]]
+family = "DM Sans"
+url = "app/static/fonts/dm-sans-normal-latin-ext.woff2"
+weight = "500"
+style = "normal"
+unicodeRange = "U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF"
+
+[[theme.fontFaces]]
+family = "DM Sans"
+url = "app/static/fonts/dm-sans-normal-latin.woff2"
+weight = "500"
+style = "normal"
+unicodeRange = "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD"
+
+[[theme.fontFaces]]
+family = "DM Sans"
+url = "app/static/fonts/dm-sans-normal-latin-ext.woff2"
+weight = "700"
+style = "normal"
+unicodeRange = "U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF"
+
+[[theme.fontFaces]]
+family = "DM Sans"
+url = "app/static/fonts/dm-sans-normal-latin.woff2"
+weight = "700"
+style = "normal"
+unicodeRange = "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD"
 
 [client]
 toolbarMode = "minimal"

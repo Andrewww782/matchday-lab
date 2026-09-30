@@ -6,7 +6,7 @@ from app import data, ui
 
 PAGES = st.session_state["pages"]
 
-st.title("Who plays like him?")
+st.title("Who plays *like him?*")
 st.markdown("Pick a player to find others with the most similar playing style anywhere in Europe's top "
             "five leagues, based on what they do per 90 minutes.")
 
@@ -84,6 +84,7 @@ if other_clubs:
     res = res[res["team"] != me["team"]]
 res = res.sort_values("similarity", ascending=False).head(10)
 
+ui.eyebrow("Look-alikes")
 st.subheader(f"Most similar to {me['web_name']}")
 if res.empty:
     st.info("No one matches those filters. Try loosening them.")

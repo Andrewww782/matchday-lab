@@ -47,11 +47,24 @@
     }
   }
 
+  // Streamlit reuses page sections when you switch pages, so their entrance wouldn't play again.
+  // When the path changes, restart the entrance animations of the top-level sections.
+  let path = location.pathname;
+  function replayOnNavigate() {
+    if (location.pathname === path) return;
+    path = location.pathname;
+    if (reduce.matches) return;
+    const top = document.querySelectorAll("[data-testid=stMainBlockContainer]>[data-testid=stVerticalBlock]>*");
+    for (const el of top)
+      for (const a of el.getAnimations())
+        if (a.animationName === "fm-rise") { a.cancel(); a.play(); }
+  }
+
   let pending = false;
   new MutationObserver(() => {
     if (pending) return;
     pending = true;
-    requestAnimationFrame(() => { pending = false; scan(); });
+    requestAnimationFrame(() => { pending = false; replayOnNavigate(); scan(); });
   }).observe(document.body, {childList: true, subtree: true, characterData: true});
   scan();
 })();

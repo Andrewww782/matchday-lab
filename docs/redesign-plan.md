@@ -1,4 +1,31 @@
-# FootyMinds redesign plan ("Matchday Dark"), parked until the feature roadmap is done
+# FootyMinds redesign: Krackerz direction (chosen, shipped 2026-09-30)
+
+**Inspiration:** https://krackerz.com/, a playful retro "sticker" look. It replaced the Matchday Dark plan below.
+
+**Look:**
+- **Colours:** cream paper (#F7F6F0) with a dotted background and ink (#161616) text. Blocks run from tomato red (#CF2B09) to rust (#A52207), maroon (#7C1A06) and deep maroon (#580D14). Neon lime (#C8FF2E) is used for stickers and buttons. The tokens live in `app/theme.py`.
+- **Type:** Bowlby One for the chunky uppercase headings, Yellowtail for the script accent word (write `*word*` in `st.title`), DM Sans for body text. All are self-hosted in `static/fonts/` with their licences.
+- **Components** (`app/ui.py` + `app/style.css`):
+  - tilted stickers (`ui.sticker`) and red scalloped eyebrows (`ui.eyebrow`);
+  - the cloud hero (`ui.hero`) and a red league banner with a league-colour sticker (`ui.banner`);
+  - white cards with an ink border and hard shadow (containers keyed `fmcard…`);
+  - red→maroon number tiles with a bitten corner (all `st.metric`s);
+  - lime press-down buttons (page links); ink/lime pill toggles;
+  - FAQ-style expanders, scalloped dividers and a maroon footer (`ui.footer`).
+- **League touch:** only the league sticker and the heatmap shading use league colours (`theme.league_scale`).
+- **Win/draw/loss bar:** home red, draw stone, away ink. The labels are always shown.
+- **Navigation:** a top menu (`st.navigation(position="top")`). CSS orders it This week · Matches ▾ · Players ▾ · Fantasy · How it works, with a lime **Find a player** button (`app/pages/find.py`). On phones it folds into a drawer.
+- **Light only** (`theme.base = "light"`).
+- **Motion** (from the colour & motion pass): entrances, which also replay on page switch; count-ups; bars growing; stickers slapping on and wiggling on hover; cards lifting. Everything is off under reduced motion.
+
+**Gotchas:**
+- Streamlit's HTML sanitiser drops a whole `<style>` block that contains "<" followed by a letter, and it strips inline SVG (use an `<img>` from `static/`).
+- Streamlit sets its own `order` on menu items (hence `!important`), and it measures the menu row width to decide what overflows into "N more". Never shrink that row.
+
+---
+
+## Superseded: "Matchday Dark" (kept for reference)
+
 
 **Groundwork already in place (colour & motion pass):** `app/theme.py` (league palettes, fixed meanings, chart helpers), the self-hosted Barlow Condensed heading font, the stylesheet + motion script in `app/ui.py` / `app/motion.js`. Build on these rather than starting over.
 

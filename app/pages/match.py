@@ -4,7 +4,7 @@ import streamlit as st
 
 from app import data, theme, ui
 
-st.title("Who wins?")
+st.title("Who *wins?*")
 st.markdown("Pick two clubs to see each side's chances, and what's driving the prediction.")
 
 if not data.available("pair_probs", "upcoming"):
@@ -54,6 +54,7 @@ with st.container(border=True, key="fmcard_match"):
     st.markdown(f"**Most likely: {headline} ({p[pick]:.0%})** · {confidence}")
 
 if "top_scores" in row and pd.notna(row.get("top_scores")):
+    ui.eyebrow("Scorelines")
     st.subheader("The score")
     scores = ui.parse_scores(row["top_scores"])
     best, best_p = scores[0]
@@ -80,9 +81,11 @@ if "top_scores" in row and pd.notna(row.get("top_scores")):
                         color_continuous_scale=theme.league_scale(league), labels=dict(x=f"{away} goals", y=f"{home} goals"))
         fig.update_traces(hovertemplate=f"{home} %{{y}} – %{{x}} {away}: %{{z:.1f}}%<extra></extra>")
         fig.update_layout(height=380, margin=dict(l=0, r=0, t=10, b=0), coloraxis_showscale=False)
+        theme.style_chart(fig)
         st.plotly_chart(fig, width="stretch")
         st.caption("Chance of each exact score, in %. Scores above 5 goals are left out (they're rare).")
 
+ui.eyebrow("The reasons")
 st.subheader("Why?")
 items = sorted([(g, float(row[g])) for g in GROUPS if abs(row[g]) >= 0.5], key=lambda x: -abs(x[1]))
 if not items:
@@ -115,6 +118,7 @@ so this season's predictions are a genuine test.
 """)
 
 st.divider()
+ui.eyebrow("Track record")
 st.subheader("How has it done this season?")
 if not data.available("track_record"):
     st.caption("No finished matches yet this season.")

@@ -11,7 +11,7 @@
 | 7 | **Sharing** | shareable image cards, share buttons, simple usage analytics |
 | 8 | **Engagement** | fans-vs-the-model leaderboard; weekly email/post (needs an account/database decision at that point) |
 | 9 | **Housekeeping** | automatic season rollover, open-sourcing, fresher market-value source |
-| 10 | **Redesign** | the "Matchday Dark" plan (appendix); hosting, no-sleep and custom-domain decisions happen here |
+| 10 ✅ | **Redesign** (shipped, pulled forward) | Krackerz-inspired look (docs/redesign-plan.md): cream paper, chunky type + script accents, red/maroon blocks, lime stickers, top menu; hosting, no-sleep and custom-domain decisions still open |
 
 ---
 

@@ -1,3 +1,5 @@
+import html
+
 import pandas as pd
 import streamlit as st
 
@@ -11,18 +13,25 @@ if not data.available("upcoming"):
 
 league = ui.league_picker()
 name = data.league_name(league)
-st.title(f"This week in the {name}" if league == "EPL" else f"This week in {name}")
-st.markdown("Predictions, player values and scouting, all in plain English. Updated every week.")
-
 up = data.table("upcoming")
 up = up[up["league"] == league]
+round_name = "Gameweek" if league == "EPL" else "Matchday"
+gw = int(up.sort_values("kickoff")["gw"].iloc[0]) if len(up) else None
+week = up[up["gw"] == gw].sort_values("kickoff") if gw else up
+
+the = "the " if league == "EPL" else ""
+ui.hero(f"This week in {the}<em>{html.escape(name)}</em>",
+        "Predictions, player values and scouting, all in plain English. Updated every week.",
+        tag=f"{round_name} {gw} · {len(week)} games" if gw else "")
+_, mid, _ = st.columns([1, 2, 1])
+with mid:
+    if data.available("players"):
+        ui.player_search(key="home_find")
+
 if up.empty:
     st.info(f"No upcoming {name} fixtures right now. The season may be on a break.")
     st.stop()
-gw = int(up.sort_values("kickoff")["gw"].iloc[0])
-round_name = "Gameweek" if league == "EPL" else "Matchday"
-week = up[up["gw"] == gw].sort_values("kickoff")
-st.html(ui.banner(name, f"{round_name} {gw} · {len(week)} games"))
+ui.eyebrow("This week's games")
 st.subheader(f"{round_name} {gw} predictions")
 now = pd.Timestamp.now(tz="UTC")
 cols = st.columns(2)
@@ -47,6 +56,7 @@ st.divider()
 left, right = st.columns([3, 2], gap="large")
 with left:
     if league == "EPL" and data.available("fpl_players"):
+        ui.eyebrow("Fantasy")
         st.subheader("Players to watch this week")
         fp = data.table("fpl_players")
         top = fp.sort_values("xpts_next", ascending=False).head(8)
@@ -59,6 +69,7 @@ with left:
                 format="%.1f", min_value=0, max_value=float(top["xpts_next"].max()))})
         st.page_link(PAGES["fpl"], label="More fantasy picks", icon=":material/arrow_forward:")
     elif data.available("values", "players"):
+        ui.eyebrow("Player values")
         st.subheader(f"Bargains in {name}")
         st.caption("Players whose numbers say they're worth more than their market value.")
         v = data.table("values")
@@ -70,7 +81,7 @@ with left:
             "Numbers say": top["est_value"].map(ui.money), "Market": top["tm_value"].map(ui.money)}),
             hide_index=True, width="stretch")
         st.page_link(PAGES["value"], label="More player values", icon=":material/arrow_forward:")
-with right:
+with right, st.container(key="fmexplore"):
     st.subheader("Explore")
     for key, blurb in [("match", "Pick any two clubs and see who's favourite, and why."),
                        ("sim", "Title, Champions League and relegation odds, plus what-ifs."),

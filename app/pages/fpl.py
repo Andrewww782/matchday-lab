@@ -5,7 +5,7 @@ import streamlit as st
 from app import data, theme, ui
 from app.fpl_live import FplError, squad
 
-st.title("Fantasy picks")
+st.title("Fantasy *picks*")
 st.markdown("Expected FPL points for every player over the next few gameweeks, based on their "
             "numbers, likely minutes and fixtures. Add your team ID for personal advice.")
 
@@ -132,6 +132,7 @@ with tabs[2]:
                                texttemplate="%{text}", colorscale="RdYlGn", zmin=0.1, zmax=0.7, showscale=False,
                                hovertemplate="%{y} %{x}: %{text}<br>Win chance %{z:.0%}<extra></extra>"))
     fig.update_layout(height=640, margin=dict(l=0, r=0, t=10, b=0), yaxis=dict(autorange="reversed"))
+    theme.style_chart(fig)
     st.plotly_chart(fig, width="stretch")
 with tabs[3]:
     labels = fp.set_index("code")["name"] + " · " + fp.set_index("code")["team"]
@@ -146,9 +147,10 @@ with tabs[3]:
         st.markdown(f"**{rows['xpts'].sum():.1f} expected points over the next {horizon} gameweeks.** "
                     f"Expected minutes per game: {rows['exp_min'].mean():.0f}.")
         fig = go.Figure(go.Bar(x=comp.values, y=comp.index, orientation="h",
-                               marker_color=[theme.GOOD if v > 0 else theme.BAD for v in comp.values],
+                               marker_color=[theme.LIME_DARK if v > 0 else theme.RED for v in comp.values],
                                hovertemplate="%{y}: %{x:.1f} pts<extra></extra>"))
         fig.update_layout(height=320, margin=dict(l=0, r=0, t=10, b=0), xaxis_title="Expected points")
+        theme.style_chart(fig)
         st.plotly_chart(fig, width="stretch")
         per = rows.assign(Fixture=rows["opp"].map(lambda t: short.get(t, t)) + " (" + rows["venue"] + ")")
         st.dataframe(per[["gw", "Fixture", "xpts"]].rename(columns={"gw": "GW", "xpts": "Expected pts"}),
