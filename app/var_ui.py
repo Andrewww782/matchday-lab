@@ -54,12 +54,14 @@ def highlights(ev_row) -> None:
         hit = h[(h.event_id == ev_row["event_id"]) & h.video_id.notna()]
         vid = hit.video_id.iloc[0] if len(hit) else None
     with st.expander("▶ Watch the highlights"):
+        q = quote_plus(f"{ev_row['home']} vs {ev_row['away']} highlights")
+        search = f"https://www.youtube.com/results?search_query={q}"
         if vid:
             st.video(f"https://www.youtube.com/watch?v={vid}")
-            st.caption("Official league highlights on YouTube. Not every incident makes the highlights.")
+            st.caption("Official highlights on YouTube. Not every incident makes the highlights. "
+                       f"Video not playing where you are? [Search YouTube instead]({search}).")
         else:
-            q = quote_plus(f"{ev_row['home']} vs {ev_row['away']} highlights")
-            st.link_button("Search the highlights on YouTube", f"https://www.youtube.com/results?search_query={q}")
+            st.link_button("Search the highlights on YouTube", search)
             st.caption("We couldn't match an official highlights video for this game yet.")
 
 

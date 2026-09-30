@@ -96,3 +96,15 @@ def test_highlights_step_skips_without_a_key(monkeypatch, capsys):
     monkeypatch.delenv("YOUTUBE_API_KEY", raising=False)
     bh.main()
     assert "skipping" in capsys.readouterr().out
+
+
+def test_highlights_channel_names_with_digits_and_priority():
+    from pipeline import build_highlights as bh
+
+    def item(vid, title, channel):
+        return {"id": {"videoId": vid}, "snippet": {"title": title, "channelTitle": channel}}
+    assert bh.pick([item("l1", "PSG vs Marseille | Highlights | Ligue 1 McDonald's", "Ligue 1 McDonald's")],
+                   "Ligue_1", "Marseille", "PSG")["video_id"] == "l1"
+    both = [item("nbc", "Arsenal v. Leeds | PREMIER LEAGUE HIGHLIGHTS", "NBC Sports"),
+            item("pl", "HIGHLIGHTS | Arsenal 2-0 Leeds", "Premier League")]
+    assert bh.pick(both, "EPL", "Arsenal", "Leeds")["video_id"] == "pl"   # the league's own channel wins

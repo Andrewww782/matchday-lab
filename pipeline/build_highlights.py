@@ -13,13 +13,14 @@ from pipeline.config import DATA
 from pipeline.matching import norm
 
 API = "https://www.googleapis.com/youtube/v3/search"
-# Channel titles we trust per league (compared after normalising: lower case, no accents/punctuation).
+# Channels we trust per league, best first (the league's own channel beats a broadcaster, whose videos
+# are often region-locked). Compared with the same normalisation as the titles.
 CHANNELS = {
-    "EPL": ["premier league", "nbc sports", "sky sports football", "sky sports premier league"],
-    "La_Liga": ["laliga ea sports", "laliga", "laliga santander"],
-    "Serie_A": ["serie a"],
-    "Bundesliga": ["bundesliga"],
-    "Ligue_1": ["ligue 1 mcdonald s", "ligue 1", "ligue 1 uber eats"],
+    "EPL": ["Premier League", "Sky Sports Premier League", "Sky Sports Football", "NBC Sports"],
+    "La_Liga": ["LALIGA EA SPORTS", "LALIGA", "LaLiga Santander"],
+    "Serie_A": ["Serie A"],
+    "Bundesliga": ["Bundesliga"],
+    "Ligue_1": ["Ligue 1 McDonald's", "Ligue 1+", "Ligue 1", "Ligue 1 Uber Eats", "LIGUE 1 McDonald's"],
 }
 MAX_TRIES, SEARCH_DAYS = 3, 7
 
@@ -30,16 +31,19 @@ def _tokens(club: str) -> set[str]:
 
 
 def pick(items: list[dict], league: str, home: str, away: str) -> dict | None:
-    """The first video from a trusted channel whose title names both clubs, preferring "highlights"."""
+    """The best video from a trusted channel whose title names both clubs: league channel first, then
+    videos that say "highlights"."""
+    rank = {norm(c): i for i, c in reversed(list(enumerate(CHANNELS[league])))}
     ok = []
     for it in items:
         sn = it.get("snippet", {})
         words = set(norm(sn.get("title", "")).split())
-        if norm(sn.get("channelTitle", "")) in CHANNELS[league] and _tokens(home) & words and _tokens(away) & words:
-            ok.append((not ({"highlights", "highlight"} & words), it))
+        ch = norm(sn.get("channelTitle", ""))
+        if ch in rank and _tokens(home) & words and _tokens(away) & words:
+            ok.append(((rank[ch], not ({"highlights", "highlight"} & words)), it))
     if not ok:
         return None
-    it = sorted(ok, key=lambda x: x[0])[0][1]
+    it = min(ok, key=lambda x: x[0])[1]
     return {"video_id": it["id"]["videoId"], "title": it["snippet"].get("title"), "channel": it["snippet"].get("channelTitle")}
 
 
