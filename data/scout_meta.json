@@ -225,64 +225,64 @@
     },
     "attacking": {
       "DEF": {
-        "Attacking full-back": {
-          "xGBuildup": 0.41,
-          "xA": 1.78,
-          "key_passes": 1.78,
-          "npxG": 0.46,
-          "xGChain": 0.93
-        },
         "Stay-at-home defender": {
-          "xGBuildup": -0.54,
-          "xA": -0.37,
+          "xGBuildup": -0.52,
+          "xA": -0.36,
           "key_passes": -0.36,
           "npxG": -0.26,
-          "xGChain": -0.6
+          "xGChain": -0.58
         },
         "Ball-playing defender": {
-          "xGBuildup": 1.16,
-          "xA": -0.18,
-          "key_passes": -0.22,
-          "npxG": 0.4,
-          "xGChain": 0.97
+          "xGBuildup": 1.22,
+          "xA": -0.19,
+          "key_passes": -0.2,
+          "npxG": 0.44,
+          "xGChain": 1.01
+        },
+        "Attacking full-back": {
+          "xGBuildup": 0.4,
+          "xA": 1.8,
+          "key_passes": 1.79,
+          "npxG": 0.43,
+          "xGChain": 0.92
         }
       },
       "MID": {
+        "Creator": {
+          "goals": -0.29,
+          "npxG": -0.33,
+          "shots": -0.24,
+          "xA": 0.65,
+          "key_passes": 0.72,
+          "xGChain": 0.58,
+          "xGBuildup": 0.83
+        },
         "Holding midfielder": {
-          "goals": -0.58,
+          "goals": -0.56,
           "npxG": -0.59,
-          "shots": -0.64,
-          "xA": -0.72,
-          "key_passes": -0.72,
-          "xGChain": -0.74,
-          "xGBuildup": -0.42
+          "shots": -0.62,
+          "xA": -0.65,
+          "key_passes": -0.64,
+          "xGChain": -0.7,
+          "xGBuildup": -0.37
+        },
+        "Goal-scoring midfielder": {
+          "goals": 1.37,
+          "npxG": 1.57,
+          "shots": 1.58,
+          "xA": 1.64,
+          "key_passes": 1.54,
+          "xGChain": 1.85,
+          "xGBuildup": 0.91
         },
         "Deep playmaker": {
-          "goals": 1.02,
+          "goals": 1.03,
           "npxG": 1.03,
-          "shots": 0.99,
+          "shots": 1.01,
           "xA": 0.02,
           "key_passes": -0.03,
           "xGChain": 0.12,
           "xGBuildup": -0.5
-        },
-        "Creator": {
-          "goals": -0.34,
-          "npxG": -0.38,
-          "shots": -0.28,
-          "xA": 0.47,
-          "key_passes": 0.54,
-          "xGChain": 0.36,
-          "xGBuildup": 0.64
-        },
-        "Goal-scoring midfielder": {
-          "goals": 1.22,
-          "npxG": 1.36,
-          "shots": 1.36,
-          "xA": 1.67,
-          "key_passes": 1.61,
-          "xGChain": 1.86,
-          "xGBuildup": 1.05
         }
       },
       "FWD": {
