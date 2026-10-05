@@ -138,9 +138,34 @@ def test_home_cards_show_likely_score(league):
 
 
 # --- Profile pages -------------------------------------------------------------------------------
+#
+# These pin widget state via at.session_state rather than the run() helper's query-params: AppTest
+# overwrites at.query_params after every .run() with whatever the just-run page's own query string
+# produced, so a key no widget on the first page (home.py) touches only survives by pass-through,
+# not by guarantee. Setting session_state directly (as test_simulator_what_if_mode already does
+# above) pins the widget's value unambiguously.
+
+def _team_page(league: str, team: str) -> AppTest:
+    at = AppTest.from_file(str(ROOT / "streamlit_app.py"), default_timeout=60)
+    at.session_state["league"], at.session_state["team"] = league, team
+    at.run()
+    return at.switch_page("app/pages/team.py").run()
+
+
+def _player_pid(label: str) -> int:
+    from app import data
+    return int(data.player_index().set_index("label")["pid"][label])
+
+
+def _player_page(label: str) -> AppTest:
+    at = AppTest.from_file(str(ROOT / "streamlit_app.py"), default_timeout=60)
+    at.session_state["player"] = _player_pid(label)
+    at.run()
+    return at.switch_page("app/pages/player.py").run()
+
 
 def test_team_page_shows_form_fixtures_players_and_var():
-    at = run("app/pages/team.py", team="Arsenal")
+    at = _team_page("EPL", "Arsenal")
     assert not at.exception
     subheaders = {s.value for s in at.subheader}
     assert subheaders >= {"How have they been playing?", "What's next?", "Who to watch",
@@ -150,28 +175,28 @@ def test_team_page_shows_form_fixtures_players_and_var():
 @pytest.mark.parametrize("team,league", [("Barcelona", "La_Liga"), ("AC Milan", "Serie_A"),
                                          ("Bayern Munich", "Bundesliga"), ("PSG", "Ligue_1")])
 def test_team_page_for_every_league(team, league):
-    at = run("app/pages/team.py", team=team)
+    at = _team_page(league, team)
     assert not at.exception, [e.value for e in at.exception]
     assert at.segmented_control(key="league").value == league
     assert at.selectbox(key="team").value == team
 
 
 def test_player_profile_renders():
-    at = run("app/pages/player.py", player="Bukayo Saka · Arsenal")
+    at = _player_page("Bukayo Saka · Arsenal")
     assert not at.exception
     assert any("Bukayo Saka" in str(h.proto) for h in at.get("html"))
     assert {m.label for m in at.metric} >= {"Minutes", "Non-penalty goals", "Expected assists (xA)"}
 
 
 def test_player_profile_links_deeper():
-    at = run("app/pages/player.py", player="Bukayo Saka · Arsenal")
+    at = _player_page("Bukayo Saka · Arsenal")
     assert not at.exception
     links = " ".join(str(el.proto) for el in at.get("page_link"))
     assert "value" in links and "scout" in links and "compare" in links
 
 
 def test_squad_links_to_player_profile():
-    at = run("app/pages/team.py", team="Arsenal")
+    at = _team_page("EPL", "Arsenal")
     assert not at.exception
     links = " ".join(str(el.proto) for el in at.get("page_link"))
     assert "player" in links
