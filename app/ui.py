@@ -154,6 +154,21 @@ def pill(text: str, colour: str, shine: bool = False) -> str:
             f'style="background:{colour};color:{theme.text_on(colour)}">{html.escape(text)}</span>')
 
 
+def form_pills(results: list[str]) -> str:
+    """W/D/L results (oldest first) as a row of coloured pills."""
+    colour = {"W": theme.GOOD, "D": theme.NEUTRAL, "L": theme.BAD}
+    return ('<div style="display:flex;gap:.3rem;flex-wrap:wrap">'
+            + "".join(pill(r, colour.get(r, "#888")) for r in results) + "</div>")
+
+
+def player_header(p) -> str:
+    """Name, club, league, position and age — the line shared by every player card."""
+    pos = p.get("sub_position") or p["pos"]
+    return (f'<div style="font-size:1.3rem;font-weight:700">{html.escape(p["name"])}</div>'
+            f'<div class="ml-muted">{badge(p["team"])} · {html.escape(p["league_name"])} · {pos} · '
+            f'age {p["age"]:.0f}</div>')
+
+
 def player_picker(label: str, pids: list[int], key: str = "player", default: int | None = None,
                   help: str | None = None) -> int | None:
     """Searchable player box whose choice lives in the URL (?player=...), so links are shareable."""
@@ -172,12 +187,8 @@ def player_search(key: str, label: str = "Find any player"):
     found = st.selectbox(label, idx["pid"].tolist(), index=None, format_func=lambda c: labels[c],
                          placeholder="Type a name: Saka, Yamal, Kane…", key=key)
     if found is not None:
-        q = {"player": labels[found]}  # bound widgets read their label from the URL
-        c1, c2, c3 = st.columns(3)
-        c1.page_link(pages["value"], label="What's he worth?", icon=":material/payments:", query_params=q)
-        c2.page_link(pages["scout"], label="Similar players", icon=":material/person_search:", query_params=q)
-        c3.page_link(pages["compare"], label="Compare him", icon=":material/compare_arrows:",
-                     query_params={"players": labels[found]})
+        st.page_link(pages["player"], label="View profile", icon=":material/badge:",
+                     query_params={"player": labels[found]})  # bound widgets read their label from the URL
     return found
 
 
@@ -201,9 +212,9 @@ def league_picker(key: str = "league") -> str:
     """Premier League · La Liga · Serie A · Bundesliga · Ligue 1. Lives in the URL (?league=...)
     and is remembered across pages; links without it mean the Premier League."""
     lg = data.leagues()
-    # A shared link naming a club (e.g. ?home=Barcelona) picks that club's league.
+    # A shared link naming a club (e.g. ?home=Barcelona or ?team=Barcelona) picks that club's league.
     if key not in st.query_params:
-        for q in ("home", "away"):
+        for q in ("home", "away", "team"):
             team = st.query_params.get(q)
             if team and team in data.team_league():
                 st.session_state[key] = data.team_league()[team]

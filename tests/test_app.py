@@ -5,7 +5,8 @@ import pytest
 from streamlit.testing.v1 import AppTest
 
 ROOT = Path(__file__).resolve().parents[1]
-PAGES = ["app/pages/home.py", "app/pages/var.py", "app/pages/match.py", "app/pages/value.py", "app/pages/scout.py",
+PAGES = ["app/pages/home.py", "app/pages/var.py", "app/pages/match.py", "app/pages/team.py",
+         "app/pages/player.py", "app/pages/value.py", "app/pages/scout.py",
          "app/pages/compare.py", "app/pages/simulator.py", "app/pages/about.py",
          "app/pages/find.py", "app/pages/offside.py"]
 
@@ -61,7 +62,7 @@ def test_simulator_what_if_mode():
 
 
 LEAGUE_NAMES = ["Premier League", "La Liga", "Serie A", "Bundesliga", "Ligue 1"]
-LEAGUE_PAGES = ["app/pages/home.py", "app/pages/match.py", "app/pages/simulator.py"]
+LEAGUE_PAGES = ["app/pages/home.py", "app/pages/match.py", "app/pages/simulator.py", "app/pages/team.py"]
 
 
 @pytest.mark.parametrize("league", LEAGUE_NAMES)
@@ -136,6 +137,46 @@ def test_home_cards_show_likely_score(league):
     assert "Likely score" in " ".join(str(h.proto) for h in at.get("html"))
 
 
+# --- Profile pages -------------------------------------------------------------------------------
+
+def test_team_page_shows_form_fixtures_players_and_var():
+    at = run("app/pages/team.py", team="Arsenal")
+    assert not at.exception
+    subheaders = {s.value for s in at.subheader}
+    assert subheaders >= {"How have they been playing?", "What's next?", "Who to watch",
+                         "Did the refs get it right?"}
+
+
+@pytest.mark.parametrize("team,league", [("Barcelona", "La_Liga"), ("AC Milan", "Serie_A"),
+                                         ("Bayern Munich", "Bundesliga"), ("PSG", "Ligue_1")])
+def test_team_page_for_every_league(team, league):
+    at = run("app/pages/team.py", team=team)
+    assert not at.exception, [e.value for e in at.exception]
+    assert at.segmented_control(key="league").value == league
+    assert at.selectbox(key="team").value == team
+
+
+def test_player_profile_renders():
+    at = run("app/pages/player.py", player="Bukayo Saka · Arsenal")
+    assert not at.exception
+    assert any("Bukayo Saka" in str(h.proto) for h in at.get("html"))
+    assert {m.label for m in at.metric} >= {"Minutes", "Non-penalty goals", "Expected assists (xA)"}
+
+
+def test_player_profile_links_deeper():
+    at = run("app/pages/player.py", player="Bukayo Saka · Arsenal")
+    assert not at.exception
+    links = " ".join(str(el.proto) for el in at.get("page_link"))
+    assert "value" in links and "scout" in links and "compare" in links
+
+
+def test_squad_links_to_player_profile():
+    at = run("app/pages/team.py", team="Arsenal")
+    assert not at.exception
+    links = " ".join(str(el.proto) for el in at.get("page_link"))
+    assert "player" in links
+
+
 # --- Colour & motion ---------------------------------------------------------------------------
 
 def test_stylesheet_survives_streamlits_sanitiser():
@@ -196,13 +237,13 @@ def test_stickers_and_eyebrows_render():
     assert 'class="fm-banner"' in ui.banner("Serie A", "Matchday 6") and "fm-sticker league" in ui.banner("Serie A")
 
 
-def test_find_page_links_out():
+def test_find_page_links_to_profile():
     at = run("app/pages/find.py")
     assert not at.exception
     at.selectbox(key="find_player").select_index(0).run()
     assert not at.exception
     links = " ".join(str(el.proto) for el in at.get("page_link"))
-    assert "value" in links and "scout" in links and "compare" in links
+    assert "player" in links
 
 
 def test_every_page_has_the_footer():

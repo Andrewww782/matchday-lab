@@ -27,12 +27,9 @@ v = vals.set_index("pid").loc[pid]
 p = players.loc[pid]
 
 with st.container(border=True, key="fmcard_player"):
-    st.html(ui.club_stripe(p["team"])
-            + f'<div style="font-size:1.3rem;font-weight:700">{p["name"]}</div>'
-            f'<div class="ml-muted">{ui.badge(p["team"])} · {p["league_name"]} · {p.get("sub_position") or p["pos"]} · '
-            f'age {p["age"]:.0f}'
-            + (f' · contract to {pd.Timestamp(p["contract_expiration_date"]).year}'
-               if pd.notna(p.get("contract_expiration_date")) else "") + "</div>")
+    st.html(ui.club_stripe(p["team"]) + ui.player_header(p)
+            + (f'<div class="ml-muted">Contract to {pd.Timestamp(p["contract_expiration_date"]).year}</div>'
+               if pd.notna(p.get("contract_expiration_date")) else ""))
     k1, k2, k3 = st.columns(3)
     k1.metric("His numbers say", ui.money(v["est_value"]))
     k2.metric(f"Market value ({snap})", ui.money(v["tm_value"]),

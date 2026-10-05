@@ -36,11 +36,8 @@ pct = "pct_" if full else "pct_eu_"
 where = "Premier League" if full else "top-5-league"
 
 with st.container(border=True, key="fmcard_player"):
-    st.html(ui.club_stripe(me["team"])
-            + f'<div style="font-size:1.3rem;font-weight:700">{me["name"]}</div>'
-            f'<div class="ml-muted">{ui.badge(me["team"])} · {me["league_name"]} · {me["pos"]} · '
-            f'age {me["age"]:.0f}</div>'
-            f'<div style="margin-top:.5rem">Playing style: {ui.pill(me["style"], ui.HOME)}</div>')
+    st.html(ui.club_stripe(me["team"]) + ui.player_header(me)
+            + f'<div style="margin-top:.5rem">Playing style: {ui.pill(me["style"], ui.HOME)}</div>')
     strengths = sorted(((me[f"{pct}{c}"], labels[c]) for c in cols if pd.notna(me.get(f"{pct}{c}"))),
                        reverse=True)[:3]
     if strengths:

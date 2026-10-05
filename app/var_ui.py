@@ -206,6 +206,15 @@ def referee_table(summ: pd.DataFrame, inc: pd.DataFrame, min_votes: int = 5, min
     return g[g["calls"] >= min_calls].sort_values("agree", ascending=False)
 
 
+def team_record(summ: pd.DataFrame, inc: pd.DataFrame, team: str, min_votes: int = 5) -> tuple[int, int]:
+    """Wrong calls against this team, and wrong calls that went in their favour."""
+    s = summ[summ["n"] >= min_votes].join(inc.set_index("incident_id")[["against_team", "benefit_team"]], how="inner")
+    wrong = s[s["wrong_pct"] >= 0.5]
+    against = int((wrong["against_team"] == team).sum())
+    favour = int((wrong["benefit_team"] == team).sum())
+    return against, favour
+
+
 def robbed_table(summ: pd.DataFrame, inc: pd.DataFrame, min_votes: int = 5) -> pd.DataFrame:
     s = summ[summ["n"] >= min_votes].join(inc.set_index("incident_id")[["against_team", "benefit_team"]], how="inner")
     wrong = s[s["wrong_pct"] >= 0.5]

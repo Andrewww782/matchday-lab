@@ -12,6 +12,8 @@ ui.set_league_accent(st.session_state.get("league"))
 PAGES = {
     "home": st.Page("app/pages/home.py", title="This week", icon=":material/home:", default=True),
     "match": st.Page("app/pages/match.py", title="Who wins?", icon=":material/sports_soccer:", url_path="match"),
+    "team": st.Page("app/pages/team.py", title="Club profile", icon=":material/shield:", url_path="team"),
+    "player": st.Page("app/pages/player.py", title="Player profile", icon=":material/badge:", url_path="player"),
     "value": st.Page("app/pages/value.py", title="What's he worth?", icon=":material/payments:", url_path="value"),
     "scout": st.Page("app/pages/scout.py", title="Who plays like him?", icon=":material/person_search:", url_path="scout"),
     "compare": st.Page("app/pages/compare.py", title="Head-to-head", icon=":material/compare_arrows:", url_path="compare"),
@@ -28,8 +30,8 @@ st.session_state["pages"] = PAGES
 # Fantasy (app/pages/fpl.py) is parked for a later update: its data still builds, it's just not in the menu.
 nav = st.navigation({
     "": [PAGES["home"], PAGES["var"], PAGES["about"], PAGES["find"]],
-    "Matches": [PAGES["match"], PAGES["sim"], PAGES["offside"]],
-    "Players": [PAGES["value"], PAGES["scout"], PAGES["compare"]],
+    "Matches": [PAGES["match"], PAGES["team"], PAGES["sim"], PAGES["offside"]],
+    "Players": [PAGES["player"], PAGES["value"], PAGES["scout"], PAGES["compare"]],
 }, position="top")
 
 try:
