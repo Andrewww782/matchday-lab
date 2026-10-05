@@ -109,10 +109,13 @@ else:
         st.caption(f"No big calls involving {team} yet this season.")
     else:
         summ = votes.summary(inc.incident_id)
-        against, favour = var_ui.team_record(summ, inc, team)
-        c1, c2 = st.columns(2)
-        c1.metric("Wrong calls against them", against)
-        c2.metric("Wrong calls in their favour", favour)
+        if (summ["n"] >= 5).any():
+            against, favour = var_ui.team_record(summ, inc, team)
+            c1, c2 = st.columns(2)
+            c1.metric("Wrong calls against them", against)
+            c2.metric("Wrong calls in their favour", favour)
+        else:
+            st.caption("Not enough votes yet to call a pattern for this club.")
         recent_inc = inc.sort_values("kickoff", ascending=False).head(3)
         for r in recent_inc.to_dict("records"):
             var_ui.card(r, compact=True, scope="team")
